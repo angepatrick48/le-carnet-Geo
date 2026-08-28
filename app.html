@@ -676,20 +676,22 @@
         </div>
       </div>
       <p class="proj-help">Le type de route détermine le <b>signe</b> du dénivelé (Mode A) : en <b>toit</b> les deux côtés sont sous l'axe ; en <b>dévers unique</b> un côté est au-dessus, l'autre en dessous ; avec <b>TPC</b> chaque chaussée draine vers l'extérieur (côtés sous l'axe). Le Mode B (5 points) n'est pas concerné (cotes lues directement).</p>
+      <h3 style="font-size:14px;color:#0b3d66;margin:10px 0 4px">Rase campagne — dimensions par défaut</h3>
+      <p class="proj-help" style="margin:0 0 8px">Ce tableau s'applique par défaut à <b>tout le projet</b> : tout PK qui n'est pas dans une <b>agglomération</b> (définie ci-dessous) est traité en <b>rase campagne</b> avec ces dimensions.</p>
       <div class="pos-panel">
         <table class="proj-table" id="pj_trTable">
           <thead id="pj_trHead"></thead>
           <tbody id="pj_trBody"></tbody>
         </table>
       </div>
-      <div class="row-actions"><button id="pj_saveTr" class="ghost">Enregistrer les dimensions</button><span class="proj-help" id="pj_trMsg"></span></div>
 <div id="pj_trSecWrap" style="margin-top:14px"><h3 style="font-size:14px;color:#0b3d66;margin:0 0 4px">Variation selon le PK — sections particulières</h3><p class="proj-help" style="margin:0 0 8px">Le tableau ci-dessus s'applique par défaut à tout le linéaire. Ajoutez des sections le long du tracé : une <b>agglomération</b> (nommée, ex. « Dabakala ville ») modifie les distances à l'axe et les pentes sur sa plage de PK ; une <b>aire de stationnement</b> (nommée, côté gauche ou droit) ajoute une position de mesure supplémentaire dans sa plage, avec ses propres distance à l'axe et pente.</p><div id="pj_trSections"></div><div class="row-actions"><button id="pj_trAddSection" class="ghost" type="button">+ Ajouter une section</button></div></div>
+      <div class="row-actions"><button id="pj_saveTr" class="ghost">Enregistrer les dimensions transversales et sections</button><span class="proj-help" id="pj_trMsg"></span></div>
     </div>
 
     <div class="card">
       <h2>Assainissement, drainage &amp; ouvrages hydrauliques (prévus)</h2>
-      <p class="proj-help">Listez les ouvrages et éléments d'assainissement prévus : type, section et PK. Ils servent au suivi d'avancement (comparaison « prévu / réalisé / reste à exécuter ») dans la synoptique du Récap. Pour un ouvrage ponctuel (dalot, buse…), laissez « PK fin » vide.</p>
-      <div class="pos-panel"><table class="proj-table"><thead><tr><th>Type</th><th>Section</th><th>PK début</th><th>PK fin</th><th></th></tr></thead><tbody id="pj_drBody"></tbody></table></div>
+      <p class="proj-help">Listez les ouvrages prévus. Pour l'<b>assainissement linéaire</b> (bordure, caniveau, fossé) : précisez le <b>côté</b> (gauche/droite) et le PK début → PK fin. Pour un <b>dalot ou ouvrage transversal</b> (buse, radier, tête…) : indiquez uniquement le <b>PK de l'axe</b> (les cases « Côté » et « PK fin » se désactivent d'elles-mêmes). Sert au suivi « prévu / réalisé / reste » dans la synoptique.</p>
+      <div class="pos-panel"><table class="proj-table"><thead><tr><th>Type</th><th>Section</th><th>Côté</th><th>PK (début/axe)</th><th>PK fin</th><th></th></tr></thead><tbody id="pj_drBody"></tbody></table></div>
       <div class="row-actions"><button id="pj_drAdd" class="ghost" type="button">+ Ajouter un ouvrage</button><button id="pj_saveDr" class="ghost">Enregistrer</button><span class="proj-help" id="pj_drMsg"></span></div>
     </div>
     <div class="card">
@@ -809,6 +811,8 @@
       <div id="recap_impl"></div>
       <h3 style="font-size:14px;color:#0b3d66;margin:16px 0 2px">Comparatif linéaire — Projet / Implanté / Réceptionné</h3>
       <div id="recap_compare"></div>
+      <h3 style="font-size:14px;color:#0b3d66;margin:16px 0 2px">Chaussée — avancement par couche (prévu / réalisé / reste)</h3>
+      <div id="recap_chaussee"></div>
       <h3 style="font-size:14px;color:#0b3d66;margin:16px 0 2px">Ouvrages &amp; assainissement — prévu / réalisé / reste</h3>
       <div id="recap_drain"></div>
     </div>
@@ -2972,7 +2976,7 @@ function renderRecap(){
   sh+='</tbody></table>';
   if(sEl)sEl.innerHTML=sh;
   if(fEl)fEl.innerHTML=recapFriseSVG(pts);
-  try{ const iEl=g("recap_impl"); if(iEl) iEl.innerHTML=recapImplHTML(); const cEl=g("recap_compare"); if(cEl) cEl.innerHTML=recapCompareSVG(); const dEl2=g("recap_drain"); if(dEl2) dEl2.innerHTML=drainProgressHTML(); }catch(e){}
+  try{ const iEl=g("recap_impl"); if(iEl) iEl.innerHTML=recapImplHTML(); const cEl=g("recap_compare"); if(cEl) cEl.innerHTML=recapCompareSVG(); const chEl=g("recap_chaussee"); if(chEl) chEl.innerHTML=chausseeProgressHTML(); const dEl2=g("recap_drain"); if(dEl2) dEl2.innerHTML=drainProgressHTML(); }catch(e){}
 }
 function recapFriseSVG(pts){
   const info=(typeof projet!=="undefined"&&projet.info)?projet.info:{};
@@ -3030,18 +3034,24 @@ function recapCompareSVG(){
   sum+='</div>';
   return svg+sum;
 }
+function drainIsTransversal(t){ return /dalot|buse|aqueduc|radier|t[êe]te|descente/i.test(t||""); }
 function drainOptions(sel){ let o='<option value="">—</option>'; DRAINAGE_ELEMENTS.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); OUVRAGES.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); return o; }
 function renderDrainage(){
   const body=g("pj_drBody"); if(!body) return;
   if(!Array.isArray(projet.drainage)) projet.drainage=[];
-  if(!projet.drainage.length){ body.innerHTML='<tr><td colspan="5" class="proj-help">Aucun ouvrage prévu. Cliquez « + Ajouter un ouvrage ».</td></tr>'; return; }
-  body.innerHTML=projet.drainage.map((o,i)=>`<tr>
-    <td><select data-dr="type" data-i="${i}">${drainOptions(o.type)}</select></td>
-    <td><input type="text" data-dr="section" data-i="${i}" value="${esc(o.section||'')}" placeholder="ex : 1X2X2" style="width:88px"></td>
-    <td><input type="text" data-dr="pkd" data-i="${i}" value="${esc(o.pkd||'')}" placeholder="12+000" style="width:88px"></td>
-    <td><input type="text" data-dr="pkf" data-i="${i}" value="${esc(o.pkf||'')}" placeholder="(vide=ponctuel)" style="width:104px"></td>
-    <td style="text-align:center"><button class="ghost" type="button" data-drdel="${i}">✕</button></td></tr>`).join("");
-  body.querySelectorAll("[data-dr]").forEach(inp=>["input","change"].forEach(ev=>inp.addEventListener(ev,()=>{ const i=+inp.dataset.i,k=inp.dataset.dr; projet.drainage[i][k]=inp.value; })));
+  projet.drainage.forEach(o=>{ if(o.cote===undefined) o.cote=""; });
+  if(!projet.drainage.length){ body.innerHTML='<tr><td colspan="6" class="proj-help">Aucun ouvrage prévu. Cliquez « + Ajouter un ouvrage ».</td></tr>'; return; }
+  body.innerHTML=projet.drainage.map((o,i)=>{
+    const trans=drainIsTransversal(o.type);
+    const coteCell = trans
+      ? '<td style="text-align:center;color:#7a8aa0">Axe</td>'
+      : `<td><select data-dr="cote" data-i="${i}" style="width:96px"><option value=""${!o.cote?' selected':''}>—</option><option value="G"${o.cote==='G'?' selected':''}>Gauche</option><option value="D"${o.cote==='D'?' selected':''}>Droite</option><option value="2"${o.cote==='2'?' selected':''}>2 côtés</option></select></td>`;
+    const pkfCell = trans
+      ? '<td style="text-align:center;color:#7a8aa0">—</td>'
+      : `<td><input type="text" data-dr="pkf" data-i="${i}" value="${esc(o.pkf||'')}" placeholder="(vide=ponctuel)" style="width:104px"></td>`;
+    return `<tr><td><select data-dr="type" data-i="${i}">${drainOptions(o.type)}</select></td><td><input type="text" data-dr="section" data-i="${i}" value="${esc(o.section||'')}" placeholder="ex : 1X2X2" style="width:88px"></td>${coteCell}<td><input type="text" data-dr="pkd" data-i="${i}" value="${esc(o.pkd||'')}" placeholder="${trans?'PK axe (12+000)':'12+000'}" style="width:100px"></td>${pkfCell}<td style="text-align:center"><button class="ghost" type="button" data-drdel="${i}">✕</button></td></tr>`;
+  }).join("");
+  body.querySelectorAll("[data-dr]").forEach(inp=>["input","change"].forEach(ev=>inp.addEventListener(ev,()=>{ const i=+inp.dataset.i,k=inp.dataset.dr; projet.drainage[i][k]=inp.value; if(k==="type"){ if(drainIsTransversal(inp.value)){ projet.drainage[i].pkf=""; projet.drainage[i].cote=""; } renderDrainage(); } })));
   body.querySelectorAll("button[data-drdel]").forEach(b=>b.addEventListener("click",()=>{ projet.drainage.splice(+b.dataset.drdel,1); saveProjet(); renderDrainage(); }));
 }
 function drainRows(){
@@ -3053,9 +3063,33 @@ function drainRows(){
     const rec=recs.some(p=>p.couche===o.type && inR(p.pk));
     const imp=imps.some(e=>e.couche===o.type && inR(e.pk));
     const st = rec?"Réceptionné":(imp?"Implanté":"À exécuter");
-    out.push({type:o.type||"", section:o.section||"", pk:(o.pkf?((o.pkd||"")+" – "+o.pkf):(o.pkd||"")), st});
+    const cl=o.cote==="G"?" (G)":o.cote==="D"?" (D)":o.cote==="2"?" (G+D)":""; out.push({type:o.type||"", section:o.section||"", pk:((o.pkf?((o.pkd||"")+" – "+o.pkf):(o.pkd||""))+cl), st});
   });
   return out;
+}
+function chausseeProgressHTML(){
+  const layers=(typeof projet!=="undefined"&&Array.isArray(projet.layers))?projet.layers:[];
+  if(!layers.length) return '<p class="hint">Aucune couche définie (renseignez la « structure de chaussée » dans Mon projet).</p>';
+  const lrx=[...new Set(((typeof projet!=="undefined"&&projet.lr)||[]).map(o=>Math.round(pkNum(o.pk))).filter(v=>isFinite(v)))];
+  const nProj=lrx.length;
+  const recs=recapAllPoints(), imps=recapAllImpl();
+  const recByC={}, impByC={};
+  recs.forEach(p=>{ const x=Math.round(pkNum(p.pk)); if(!isFinite(x))return; (recByC[p.couche]||(recByC[p.couche]=new Set())).add(x); });
+  imps.forEach(e=>{ const x=Math.round(pkNum(e.pk)); if(!isFinite(x))return; (impByC[e.couche]||(impByC[e.couche]=new Set())).add(x); });
+  let h='<table class="pos-table"><thead><tr><th>Couche</th><th>Profils projet</th><th>Implantés</th><th>Réceptionnés</th><th>Reste</th><th>Avancement</th></tr></thead><tbody>';
+  let sumR=0,sumI=0;
+  layers.forEach(L=>{ const c=L.nom||"";
+    const nR=recByC[c]?recByC[c].size:0, nI=impByC[c]?impByC[c].size:0;
+    sumR+=nR; sumI+=nI;
+    const reste=nProj?Math.max(0,nProj-nR):"—";
+    const pct=nProj?Math.round(100*nR/nProj):0;
+    const col=pct>=100?"#1a7f43":(pct>0?"#2f6bb0":"#c0392b");
+    h+=`<tr><td>${esc(c)}</td><td style="text-align:center">${nProj||"—"}</td><td style="text-align:center;color:#2f6bb0">${nI}</td><td style="text-align:center;color:#1a7f43">${nR}</td><td style="text-align:center">${reste}</td><td style="text-align:center;color:${col};font-weight:600">${nProj?pct+" %":"—"}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  if(!nProj){ h+='<div class="proj-help" style="margin-top:6px">⚠️ Importez la « ligne rouge » (profils du projet) dans Mon projet pour calculer le taux d\'avancement par couche.</div>'; }
+  else { const nL=layers.length; h+='<div class="proj-help" style="margin-top:6px">Profils projet '+nProj+' × '+nL+' couche(s) · avancement global — réception '+Math.round(100*sumR/(nProj*nL))+' % · implantation '+Math.round(100*sumI/(nProj*nL))+' %</div>'; }
+  return h;
 }
 function drainProgressHTML(){
   const list=(typeof projet!=="undefined"&&Array.isArray(projet.drainage))?projet.drainage:[];
@@ -3193,7 +3227,7 @@ if (g("pj_saveInfo")) g("pj_saveInfo").addEventListener("click", () => {
 if (g("pj_addLayer")) g("pj_addLayer").addEventListener("click", () => { projet.layers.push({nom:"Nouvelle couche", ep:0, niv:false}); saveProjet(); renderEp(); renderTr(); });
 if (g("pj_saveEp")) g("pj_saveEp").addEventListener("click", () => { saveProjet(); renderEp(); renderTr(); fillCoucheOptions(); renderPosPanel(); render(); updateNet(); flash("pj_epMsg","Enregistré ✓"); });
 if (g("pj_saveTr")) g("pj_saveTr").addEventListener("click", () => { saveProjet(); renderTr(); renderLr(); renderPosPanel(); flash("pj_trMsg","Enregistré ✓"); });
-if (g("pj_drAdd")) g("pj_drAdd").addEventListener("click", () => { if(!Array.isArray(projet.drainage)) projet.drainage=[]; projet.drainage.push({type:"",section:"",pkd:"",pkf:""}); saveProjet(); renderDrainage(); });
+if (g("pj_drAdd")) g("pj_drAdd").addEventListener("click", () => { if(!Array.isArray(projet.drainage)) projet.drainage=[]; projet.drainage.push({type:"",section:"",cote:"",pkd:"",pkf:""}); saveProjet(); renderDrainage(); });
 if (g("pj_saveDr")) g("pj_saveDr").addEventListener("click", () => { saveProjet(); renderDrainage(); flash("pj_drMsg","Enregistré ✓"); });
 if (g("pj_trAddSection")) g("pj_trAddSection").addEventListener("click", () => { if(!Array.isArray(projet.transSections)) projet.transSections=[]; projet.transSections.push({kind:"agglo", name:"", pkd:"", pkf:"", trans:JSON.parse(JSON.stringify(projet.trans||defaultTrans()))}); saveProjet(); renderTr(); });
 if (g("pj_roadType")) g("pj_roadType").addEventListener("change", () => { projet.roadType = g("pj_roadType").value; saveProjet(); renderTr(); renderPosPanel(); render(); });
