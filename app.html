@@ -674,6 +674,11 @@
           <label>TPC central</label>
           <label style="display:flex; gap:8px; align-items:center; font-weight:600; padding-top:4px;"><input type="checkbox" id="pj_tpc"> Avec terre-plein central (chaussées séparées, drainage vers l'extérieur)</label>
         </div>
+        <div class="field">
+          <label>Décrochage chaussée → accotement (cm)</label>
+          <input type="number" step="0.1" id="pj_decroch" placeholder="0" style="width:120px">
+          <div class="proj-help" style="margin-top:3px">Marche verticale entre le bord de chaussée et l'accotement (ex. <b>2</b>). Abaisse d'autant les cotes projet de l'accotement (Mode A). 0 ou vide = pas de décrochage.</div>
+        </div>
       </div>
       <p class="proj-help">Le type de route détermine le <b>signe</b> du dénivelé (Mode A) : en <b>toit</b> les deux côtés sont sous l'axe ; en <b>dévers unique</b> un côté est au-dessus, l'autre en dessous ; avec <b>TPC</b> chaque chaussée draine vers l'extérieur (côtés sous l'axe). Le Mode B (5 points) n'est pas concerné (cotes lues directement).</p>
       <h3 style="font-size:14px;color:#0b3d66;margin:10px 0 4px">Rase campagne — dimensions par défaut</h3>
@@ -2474,7 +2479,8 @@ function computedForce(couche, pk, pos, modeOverride){
   // mode A : cote à l'axe + dimensions transversales (distance propre à la couche)
   const lr = lrInterpCol(pk, "ax"); if (lr==null) return null;
   const d = transDeniv(pos, couche, pk); if (d==null) return null;
-  return lr - ca - d;
+  const _dec = (pos==="Accotement G"||pos==="Accotement D") ? (Number(projet.decrochage)||0)/100 : 0;
+  return lr - ca - d - _dec;
 }
 function computedLookup(couche, pk, pos){
   if (!projet.calcMode || projet.calcMode==="off") return null;
@@ -2677,7 +2683,7 @@ function renderProjet(){
     try{ renderLogos(); }catch(e){}
     document.querySelectorAll('input[name="pj_calc"]').forEach(r => { r.checked = (r.value === (projet.calcMode||"off")); });
     if (g("pj_roadType")) g("pj_roadType").value = projet.roadType || "toit";
-    if (g("pj_tpc")) g("pj_tpc").checked = !!projet.tpc;
+    if (g("pj_tpc")) g("pj_tpc").checked = !!projet.tpc; if (g("pj_decroch")) g("pj_decroch").value = (projet.decrochage!=null&&projet.decrochage!=="")?projet.decrochage:"";
   }catch(e){ console && console.warn && console.warn("renderProjet info:",e); }
   // chaque tableau est protégé : une erreur sur l'un n'empêche pas l'ouverture de la page
   try{ renderEp(); }catch(e){ console && console.warn && console.warn("renderEp:",e); }
@@ -3231,7 +3237,7 @@ if (g("pj_drAdd")) g("pj_drAdd").addEventListener("click", () => { if(!Array.isA
 if (g("pj_saveDr")) g("pj_saveDr").addEventListener("click", () => { saveProjet(); renderDrainage(); flash("pj_drMsg","Enregistré ✓"); });
 if (g("pj_trAddSection")) g("pj_trAddSection").addEventListener("click", () => { if(!Array.isArray(projet.transSections)) projet.transSections=[]; projet.transSections.push({kind:"agglo", name:"", pkd:"", pkf:"", trans:JSON.parse(JSON.stringify(projet.trans||defaultTrans()))}); saveProjet(); renderTr(); });
 if (g("pj_roadType")) g("pj_roadType").addEventListener("change", () => { projet.roadType = g("pj_roadType").value; saveProjet(); renderTr(); renderPosPanel(); render(); });
-if (g("pj_tpc")) g("pj_tpc").addEventListener("change", () => { projet.tpc = g("pj_tpc").checked; saveProjet(); renderTr(); renderPosPanel(); render(); });
+if (g("pj_tpc")) g("pj_tpc").addEventListener("change", () => { projet.tpc = g("pj_tpc").checked; saveProjet(); renderTr(); renderPosPanel(); render(); }); if (g("pj_decroch")) g("pj_decroch").addEventListener("input", () => { projet.decrochage = g("pj_decroch").value; saveProjet(); renderTr(); renderPosPanel(); render(); });
 document.querySelectorAll('input[name="pj_calc"]').forEach(r => r.addEventListener("change", () => {
   if (r.checked){ projet.calcMode = r.value; saveProjet(); fillDatalist(); renderPosPanel(); render(); }
 }));
