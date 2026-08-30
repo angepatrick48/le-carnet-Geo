@@ -916,12 +916,19 @@
 
 <div id="licLock" style="display:none">
   <div class="lic-box">
+    <div id="lic_expiredbox">
     <h2>Période d'essai terminée</h2>
     <p>Votre période d'essai de 2 mois de <b>Le Carnet‑Géo</b> est arrivée à échéance (ou votre licence est expirée). Pour continuer, saisissez une clé de licence valide (6 mois, 1 an ou 2 ans).</p>
     <input type="text" id="lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off">
     <div class="lic-actions"><button type="button" id="lic_activate">Activer la licence</button></div>
     <div id="lic_msg" class="lic-msg"></div>
     <p class="lic-contact">Pour obtenir une licence : kouameangepatrickmoro@gmail.com</p>
+    </div>
+    <div id="lic_updatebox" style="display:none">
+      <h2>Mise à jour requise</h2>
+      <p>Une mise à jour de <b>Le Carnet‑Géo</b> est nécessaire pour continuer. Connectez‑vous à <b>Internet</b> un instant : l'application se met à jour automatiquement, puis fonctionne à nouveau normalement (y compris hors‑ligne).</p>
+      <p class="lic-contact">En cas de difficulté : kouameangepatrickmoro@gmail.com</p>
+    </div>
   </div>
 </div>
 
@@ -1176,7 +1183,33 @@ function netPull(cb){
     }).catch(()=>{}).then(()=>{ if(cb)cb(); });
   }catch(e){ if(cb)cb(); }
 }
-function netSyncNow(){ netFlush(); netPull(()=>{ try{ renderRecap(); }catch(e){} }); }
+function netSyncNow(){ try{ licSyncTrial(); }catch(e){} netFlush(); netPull(()=>{ try{ renderRecap(); }catch(e){} }); }
+function licSyncTrial(){
+  // Essai ancré serveur : mémorise/relit la date de début d'essai dans Firebase (par utilisateur),
+  // pour empêcher la remise à zéro par réinstallation. Se recale automatiquement dès qu'il y a du réseau.
+  try{
+    if(!netOn() || !netSignedIn() || typeof fetch!=="function") return;
+    if(typeof navigator!=="undefined" && navigator.onLine===false) return;
+    const base=netBase(); const uid=(netAuth&&netAuth.uid)?netAuth.uid:null;
+    if(!base || !uid) return;
+    netToken().then(function(tok){
+      if(!tok) return;
+      const url=base+"/carnetgeo_trial/"+encodeURIComponent(uid)+"/start.json?auth="+encodeURIComponent(tok);
+      fetch(url).then(function(r){return r.json();}).then(function(srv){
+        try{ licTouchCheck(); }catch(e){}
+        const local=licInstallTs();
+        let resolved=local;
+        if(typeof srv==="number" && isFinite(srv)) resolved=Math.min(local, srv);   // garder la date LA PLUS ANCIENNE
+        if(!(typeof srv==="number" && isFinite(srv)) || srv>resolved){
+          fetch(url,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(resolved)}).catch(function(){});
+        }
+        if(resolved!==local){ try{ localStorage.setItem("recepTopo.install", String(resolved)); }catch(e){} }
+        try{ updateAboutLic(); }catch(e){}
+        try{ licCheck(); }catch(e){}
+      }).catch(function(){});
+    }).catch(function(){});
+  }catch(e){}
+}
 function netApiKey(){ return String(netCfg().apiKey||"").trim(); }
 function netSignedIn(){ return !!(netAuth && netAuth.refreshToken); }
 function netSaveAuth(){ try{ if(netAuth) localStorage.setItem("recepTopo.netauth", JSON.stringify(netAuth)); else localStorage.removeItem("recepTopo.netauth"); }catch(e){} }
@@ -2193,7 +2226,7 @@ function updateNet(){
     banner.hidden = true;
   }
 }
-window.addEventListener("online", updateNet);
+window.addEventListener("online", updateNet); window.addEventListener("online", function(){ try{ licSyncTrial(); }catch(e){} });
 window.addEventListener("online", () => { try{ netFlush(); netPull(()=>{ if(g("recapPage") && g("recapPage").style.display!=="none"){ try{ renderRecap(); }catch(e){} } try{ renderNetStatus(); }catch(e){} }); }catch(e){} });
 window.addEventListener("offline", updateNet);
 
@@ -3151,7 +3184,7 @@ if (g("net_sync")) g("net_sync").addEventListener("click", netSyncNow);
 if (g("net_key")) g("net_key").addEventListener("input", () => { if(!projet.net) projet.net={url:"",apiKey:"",on:false}; projet.net.apiKey=g("net_key").value; saveProjet(); renderNetStatus(); });
 if (g("net_login")) g("net_login").addEventListener("click", () => { const em=((g("net_email")||{}).value||"").trim(), pw=(g("net_pw")||{}).value||""; const st=g("net_status"); if(st){ st.textContent="Connexion en cours…"; st.style.color="#5b6b7a"; } netSignIn(em,pw).then(()=>{ if(g("net_pw")) g("net_pw").value=""; renderNetStatus(); netSyncNow(); }).catch(err=>{ if(st){ st.textContent="Échec de connexion : "+((err&&err.message)||"vérifiez vos identifiants"); st.style.color="#c0392b"; } }); });
 if (g("net_logout")) g("net_logout").addEventListener("click", () => { netSignOut(); });
-try{ netFlush(); }catch(e){}
+try{ netFlush(); }catch(e){} try{ licSyncTrial(); }catch(e){}
 if (g("pj_valider")) g("pj_valider").addEventListener("click", () => { saveProjet(); showPage("work"); try{ window.scrollTo(0,0); }catch(e){} });
 function effacerProjet(){
   projet = {
@@ -3998,7 +4031,18 @@ function licData(){
 function isLicensed(){ const d=licData(); return !!(d && (d.perpetual || d.valid)); }
 function trialDaysLeft(){ return Math.ceil(TRIAL_DAYS-(Date.now()-licInstallTs())/86400000); }
 function licDaysLeft(){ const d=licData(); if(!d) return null; if(d.perpetual) return Infinity; return Math.ceil((d.exp-Date.now())/86400000); }
-function licCheck(){ const l=g("licLock"); if(!l) return; l.style.display = (!isLicensed() && trialDaysLeft()<=0) ? "flex" : "none"; }
+const LIC_CHECK_MAX_DAYS = 15;
+function licLastCheck(){ let t=parseInt(localStorage.getItem("recepTopo.lastcheck")||"",10); if(!isFinite(t)){ t=licInstallTs(); try{localStorage.setItem("recepTopo.lastcheck",String(t));}catch(e){} } return t; }
+function licTouchCheck(){ try{ localStorage.setItem("recepTopo.lastcheck", String(Date.now())); }catch(e){} }
+function licStale(){ if(!netOn()) return false; return (Date.now()-licLastCheck())/86400000 > LIC_CHECK_MAX_DAYS; }
+function licCheck(){ const l=g("licLock"); if(!l) return;
+  const expired = (!isLicensed() && trialDaysLeft()<=0);
+  const stale = (!expired) && licStale();
+  const eb=g("lic_expiredbox"), ub=g("lic_updatebox");
+  if(expired){ if(eb)eb.style.display=""; if(ub)ub.style.display="none"; l.style.display="flex"; }
+  else if(stale){ if(eb)eb.style.display="none"; if(ub)ub.style.display=""; l.style.display="flex"; }
+  else { l.style.display="none"; }
+}
 function updateAboutLic(){ const s=g("ab_lic"); if(!s) return; const d=licData();
   if(d && d.perpetual){ s.textContent="Licence complète (permanente) ✓"; return; }
   if(d && d.valid){ s.textContent="Licence "+(DUR_LABEL[d.dur]||d.dur)+" active — "+licDaysLeft()+" jour(s) restant(s) (expire le "+new Date(d.exp).toLocaleDateString("fr-FR")+")"; return; }
