@@ -225,7 +225,8 @@
           <option value="import">Import de polygonale</option>
           <option value="export">Export de polygonale</option>
           <option value="niv">Nivellement de polygonale</option>
-          <option value="parcelle">Délimitation de parcelle</option>
+          <option value="leve">Levé de parcelle</option>
+          <option value="parcelle">Générer un plan A3</option>
         </select>
       </div>
       <div class="field">
@@ -290,6 +291,13 @@
         <select id="f_dalot_qual"><option value="">—</option><option>Préfabriqué</option><option>Construit sur site</option></select>
       </div>
       <div class="field">
+        <label>Type de réception</label>
+        <select id="f_recType">
+          <option value="prov" selected>Provisoire</option>
+          <option value="def">Définitive</option>
+        </select>
+      </div>
+      <div class="field">
         <label>Topographe</label>
         <input type="text" id="f_topo" placeholder="Nom">
       </div>
@@ -318,7 +326,7 @@
 
   <div class="card" id="impFicheCard">
     <h2>Import de fiche de réception — correction</h2>
-    <p class="hint">Réimportez une fiche de réception déjà exportée (contenant la feuille « DONNÉES ») pour corriger les points hors tolérance, puis ré-exportez. Les relevés importés remplacent la réception en cours. Les fiches exportées avant cette version ne contiennent pas la feuille de données.</p>
+    <p class="hint">Réimportez une fiche de réception déjà exportée (contenant la feuille « DONNÉES ») pour corriger les points hors tolérance, puis « Rendre définitive ». Les relevés importés arrivent en PROVISOIRE (un relevé de même PK / position / couche est remplacé). Les fiches exportées avant cette version ne contiennent pas la feuille de données.</p>
     <div class="row-actions">
       <input type="file" id="imp_fiche_file" accept=".xlsx" style="display:none">
       <button id="imp_fiche_btn" class="ghost" type="button">Importer une fiche (.xlsx)</button>
@@ -494,6 +502,29 @@
     </div>
   </div>
 
+  <div class="card" id="leveCard" style="display:none">
+    <h2>Levé de parcelle</h2>
+    <div id="polyGpsSec" style="border:1px solid #cfe0f5; background:#eef6ff; border-radius:8px; padding:10px; margin:6px 0 14px;">
+      <h3 style="margin:0 0 6px; color:#0b3d66;">📍 Levé de parcelle</h3>
+      <p class="proj-help" style="margin:0 0 8px;">Utilise le GPS du téléphone, hors-ligne. Précision typique 3–10 m ; ±2 m seulement en bonnes conditions (ciel dégagé, téléphone récent). Restez immobile quelques secondes : les mesures sont moyennées.</p>
+      <div class="row-actions" style="flex-wrap:wrap; gap:8px; align-items:center;">
+        <button id="gps_start" class="ghost" type="button">▶ Démarrer le GPS</button>
+        <button id="gps_stop" class="ghost" type="button" disabled>■ Arrêter</button>
+        <label class="proj-help" style="display:inline-flex; align-items:center; gap:4px;">Seuil (m)<input type="number" id="gps_seuil" value="2" step="0.5" min="0.5" style="width:64px"></label>
+        <button id="gps_add" class="ghost" type="button" disabled>➕ Ajouter le point moyenné</button>
+        <button id="gps_reset" class="ghost" type="button">↺ Réinit. mesures</button>
+      </div>
+      <div id="gps_gauge" style="margin-top:8px;"></div>
+      <div id="gps_live" class="proj-help" style="margin-top:6px; font-size:13px; line-height:1.7;">GPS arrêté.</div>
+      <div class="row-actions" style="flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; border-top:1px dashed #cfe0f5; padding-top:8px;">
+        <input type="text" id="gps_nom" placeholder="Nom de l'emprunt / parcelle" style="min-width:200px">
+        <button id="gps_plan" class="ghost" type="button">🗺️ Générer le plan A3</button>
+        <span class="proj-help">Trace le plan A3 directement à partir des points levés (≥ 3).</span>
+      </div>
+    </div>
+    <div id="leve_list"></div>
+  </div>
+
   <div class="card" id="polyCard" style="display:none">
     <h2>Polygonale</h2>
     <div id="polyImportSec">
@@ -541,7 +572,7 @@
   </div>
 
   <div class="card" id="parcCard" style="display:none">
-    <h2>Délimitation de parcelle — plan A3</h2>
+    <h2>Générer un plan A3</h2>
     <p class="proj-help">Importez les bornes de la parcelle (N° borne, X, Y). Le plan A3 reprend le <b>nom du projet</b> et les logos de « Mon projet » (entreprise à gauche, mission de contrôle à droite), avec un <b>plan de situation</b> (carte de l'environnement), le <b>nom de l'emprunt</b> sous le plan et le tableau des coordonnées. Le plan s'ouvre prêt à imprimer en A3 paysage.</p>
     <div class="grid-form">
       <div class="field"><label>Nom de l'emprunt / parcelle</label><input type="text" id="parc_nom" placeholder="ex : Emprunt E3 — PK 24+000"></div>
@@ -614,6 +645,7 @@
             <th class="num" data-s="ep">Épais. (cm)</th>
             <th data-s="conf">Conformité</th>
             <th>Topographe</th>
+            <th>Type</th>
             <th></th>
           </tr>
         </thead>
@@ -784,7 +816,7 @@
     <div class="card">
       <h2>Récapitulatif des travaux</h2>
       <p class="proj-help">Synthèse automatique des réceptions enregistrées (structure de chaussée, assainissement et drainage, ouvrages hydrauliques).</p>
-      <div class="row-actions"><button id="recap_export" class="ghost" type="button">⬇ Exporter le récap (Excel)</button><span class="proj-help" id="recap_msg"></span></div>
+      <div class="row-actions"><button id="recap_export" class="ghost" type="button">⬇ Exporter le récap (Excel)</button><button id="mat_export" class="ghost" type="button">⬇ Matricule topographique (Excel)</button><span class="proj-help" id="recap_msg"></span></div>
     </div>
     <div class="card">
       <h2>Synchronisation réseau (équipe)</h2>
@@ -833,7 +865,7 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v53 (01/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v67 (09/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
 <div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Base Firebase</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
@@ -910,7 +942,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v53 — 1 sept. 2026.</p>
+    <p><b>Version :</b> v67 — 9 sept. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -1159,7 +1191,10 @@ function implLogAdd(couche, pks, typ){
   implLogSave();
 }
 function recapAllImpl(){ const map={}; const add=arr=>(arr||[]).forEach(e=>{ if(e&&e.id) map[e.id]=e; }); add(implLog); add(implCloud); return Object.values(map); }
-function recapAllPoints(){ const map={}; const add=arr=>(arr||[]).forEach(p=>{ if(p&&p.id) map[p.id]=p; }); add(recArchive); add(netCloud); add((typeof points!=="undefined")?points:[]); return Object.values(map); }
+function isDefPoint(p){ return p && (p.recType==null || p.recType==="def"); }   // héritage : réception sans type => considérée définitive
+function recapAllPointsRaw(){ const map={}; const add=arr=>(arr||[]).forEach(p=>{ if(p&&p.id) map[p.id]=p; }); add(recArchive); add(netCloud); add((typeof points!=="undefined")?points:[]); return Object.values(map); }
+function recapAllPoints(){ return recapAllPointsRaw().filter(isDefPoint); }   // synoptique & matricule : uniquement les réceptions DÉFINITIVES
+function promote(id){ const p=(typeof points!=="undefined")?points.find(x=>x&&x.id===id):null; if(p){ p.recType="def"; save(); try{ if(typeof netEnqueue==="function") netEnqueue(p); }catch(e){} } if(typeof render==="function") render(); if(typeof renderRecap==="function") renderRecap(); }
 function netCfg(){ return (typeof projet!=="undefined" && projet.net) ? projet.net : {url:"",on:false}; }
 function netOn(){ const c=netCfg(); return !!(c.on && c.url && /^https?:\/\//i.test(String(c.url).trim())); }
 function netBase(){ return String(netCfg().url||"").trim().replace(/\/+$/,""); }
@@ -1369,6 +1404,8 @@ function updateModeUI(){
   show("nivCard",  poly === "niv");
   show("nivStatsCard", poly === "niv");
   show("polyCard", poly === "import" || poly === "export");
+  show("leveCard", poly === "leve");
+  if(poly==="leve" && typeof leveRender==="function") leveRender();
   show("polyImportSec", poly === "import");
   show("polyExportSec", poly === "export");
   show("parcCard", poly === "parcelle");
@@ -1613,6 +1650,7 @@ if(g("addBtn")) g("addBtn").onclick = () => {
   const date = g("f_date").value || new Date().toISOString().slice(0,10);
   const topo = g("f_topo").value.trim();
   const obs  = (g("f_obs").value || "").trim();
+  const recType = (g("f_recType") && g("f_recType").value==="def") ? "def" : "prov";
   let added = 0;
   curPositions().forEach((pos,i) => {
     const v = rowVals(i); if (!v) return;
@@ -1623,7 +1661,7 @@ if(g("addBtn")) g("addBtn").onclick = () => {
         date, couche, pk, pos, proj: v.proj, rel: v.rel,
         lecture: v.lecture, bleue: (lev && isFinite(bleue)) ? bleue : null,
         nomBorne: lev ? nomBorne : "", coteBorne: lev && isFinite(coteBorne) ? coteBorne : null,
-        lecArr: lev && isFinite(lecArr) ? lecArr : null, topo, obs
+        lecArr: lev && isFinite(lecArr) ? lecArr : null, topo, obs, recType
       };
       points.push(_np); try{ netEnqueue(_np); }catch(e){}
       added++;
@@ -1879,9 +1917,10 @@ function render(){
       <td class="num">${p.ep!=null?p.ep:"—"}</td>
       <td><span class="badge ${ok?'ok':'no'}">${ok?'Conforme':'Non conforme'}</span></td>
       <td>${esc(p.topo)||"—"}</td>
+      <td>${(p.recType==="prov")?('<span class="badge no">Provisoire</span> <button class="ghost" type="button" onclick="promote(\''+p.id+'\')">Rendre déf.</button>'):'<span class="badge ok">Définitive</span>'}</td>
       <td><button class="danger" onclick="del('${p.id}')">Suppr.</button></td>
     </tr>`;
-  }).join("") : `<tr><td colspan="11" class="empty">Aucun point enregistré. Ajoutez votre première réception ci-dessus.</td></tr>`;
+  }).join("") : `<tr><td colspan="12" class="empty">Aucun point enregistré. Ajoutez votre première réception ci-dessus.</td></tr>`;
   const lnote = document.getElementById("listNote");
   if (lnote) lnote.textContent = (rows.length>MAXR) ? ("Affichage des "+MAXR+" premiers relevés sur "+rows.length+" (les statistiques et l'export portent sur la totalité).") : "";
   renderStats(rows);              // statistiques sur la totalité
@@ -2681,9 +2720,10 @@ function importFicheRows(rows){
     for(let r=2;r<rows.length;r++){ const row=rows[r]; if(!row) continue; const pk=String(row[idx.pk]||"").trim(); if(!pk) continue;
       pts.push({ id:Date.now()+Math.random().toString(36).slice(2,6)+r, pk, couche:String(row[idx.couche]||""), pos:String(row[idx.pos]||""),
         lecture:num(row[idx.lecture]), rel:num(row[idx.rel]), proj:num(row[idx.proj]), bleue:num(row[idx.bleue]),
-        nomBorne:String(row[idx.nomBorne]||""), coteBorne:num(row[idx.coteBorne]), lecArr:num(row[idx.lecArr]), topo:String(row[idx.topo]||""), date:String(row[idx.date]||""), obs:String(row[idx.obs]||"") });
+        nomBorne:String(row[idx.nomBorne]||""), coteBorne:num(row[idx.coteBorne]), lecArr:num(row[idx.lecArr]), topo:String(row[idx.topo]||""), date:String(row[idx.date]||""), obs:String(row[idx.obs]||""), recType:"prov" });
     }
-    points = pts; save(); render(); updateNet(); renderPosPanel(); importFicheSummary();
+    pts.forEach(np=>{ points = points.filter(q=> !(q.pk===np.pk && q.pos===np.pos && q.couche===np.couche)); points.push(np); });   // fusion (upsert) — importées en PROVISOIRE
+    save(); render(); updateNet(); renderPosPanel(); importFicheSummary();
     return {kind:"recep", n:pts.length};
   }
   if(kind==="dalot"){
@@ -3022,7 +3062,7 @@ function renderRecap(){
   try{ const _c=netCfg(); if(g("net_url")&&document.activeElement!==g("net_url")) g("net_url").value=_c.url||""; if(g("net_key")&&document.activeElement!==g("net_key")) g("net_key").value=_c.apiKey||""; if(g("net_on")) g("net_on").checked=!!_c.on; if(g("net_email")&&document.activeElement!==g("net_email")&&netAuth&&netAuth.email) g("net_email").value=netAuth.email; renderNetStatus(); }catch(e){}
   const pts = (typeof recapAllPoints==="function") ? recapAllPoints() : ((typeof points!=="undefined"?points:[])||[]);
   const dEl=g("recap_daily"), sEl=g("recap_synth"), fEl=g("recap_frise");
-  if(!pts.length){ if(dEl)dEl.innerHTML='<p class="hint">Aucune réception enregistrée pour le moment.</p>'; if(sEl)sEl.innerHTML=""; if(fEl)fEl.innerHTML=""; return; }
+  if(!pts.length){ if(dEl)dEl.innerHTML='<p class="hint">Aucune réception définitive pour le moment. Les réceptions provisoires ne sont pas comptées ici.</p>'; if(sEl)sEl.innerHTML=""; if(fEl)fEl.innerHTML=""; return; }
   const _wk=recapWeekBounds(recapWeek);
   const _fmt=d=>String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
   { const _lbl=g("recap_wkLabel"); if(_lbl) _lbl.textContent="Semaine du "+_fmt(_wk.mon)+" au "+_fmt(_wk.sun)+(recapWeek===0?" (en cours)":""); }
@@ -3392,6 +3432,95 @@ function drainProgressHTML(){
   h+='<div class="proj-help" style="margin-top:6px">Prévu '+list.length+' · réceptionnés '+nR+' · implantés '+nI+' · reste à exécuter '+nF+(list.length?' · avancement '+Math.round(100*nR/list.length)+' %':'')+'</div>';
   return h;
 }
+/* ===== MATRICULE TOPOGRAPHIQUE (générique, sections de 10 km) ===== */
+function matPkBounds(){
+  const info=(typeof projet!=="undefined"&&projet.info)?projet.info:{};
+  let a=pkNum(info.pkd), b=pkNum(info.pkf);
+  if(isFinite(a)&&isFinite(b)&&b!==a) return {lo:Math.min(a,b),hi:Math.max(a,b)};
+  const xs=(((typeof projet!=="undefined"&&projet.lr)||[]).map(o=>pkNum(o.pk)).filter(v=>isFinite(v)));
+  if(xs.length) return {lo:Math.min.apply(null,xs),hi:Math.max.apply(null,xs)};
+  return null;
+}
+function matExportedPts(){                     // matricule : uniquement les réceptions DÉFINITIVES (provisoires exclues)
+  return (typeof recapAllPoints==="function") ? recapAllPoints() : [];
+}
+const MAT_POSLAB={"Accotement G":"Accot G","Chaussée G":"Chauss G","Axe":"Axe","Chaussée D":"Chauss D","Accotement D":"Accot D","Parking G":"Park G","Parking D":"Park D"};
+function matSectionSheet(secName, lo, hi, layers, pos, relMap, info){
+  const grid=[]; const merges=[];
+  const set=(r,c,v,s)=>{ if(v===""||v==null) return; (grid[r]=grid[r]||[])[c]={v,s}; };
+  const colL=n=>{ let s=""; n=n+1; while(n>0){ var m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-m)/26);} return s; };
+  const R=(r,c)=>colL(c)+(r+1);
+  const nPos=pos.length, nC=layers.length, totCols=2+nC*nPos;
+  let r=0;
+  const _v=x=>(x==null||String(x).trim()==="")?"—":String(x).trim();
+  set(r,0,"MATRICULE TOPOGRAPHIQUE — "+secName,6); merges.push(R(r,0)+":"+R(r,totCols-1)); r++;
+  set(r,0,_v(info.nom)+(info.troncon&&String(info.troncon).trim()?("    —    "+String(info.troncon).trim()):""),5); merges.push(R(r,0)+":"+R(r,totCols-1)); r++;
+  set(r,0,"Maître d'ouvrage : "+_v(info.mo)+"    ·    Mission de contrôle : "+_v(info.mdc)+"    ·    Entreprise : "+_v(info.ent),3); merges.push(R(r,0)+":"+R(r,totCols-1)); r++;
+  set(r,0,"Topographe : "+_v(info.topo)+"    ·    PK "+pkFmt(lo)+" → "+pkFmt(hi)+(info.long&&String(info.long).trim()?("    ·    Longueur totale : "+String(info.long).trim()+" km"):""),3); merges.push(R(r,0)+":"+R(r,totCols-1)); r++;
+  const hr=r;
+  set(hr,0,"PK",4); merges.push(R(hr,0)+":"+R(hr+1,0));
+  set(hr,1,"NATURE",4); merges.push(R(hr,1)+":"+R(hr+1,1));
+  layers.forEach((ly,ci)=>{ const c0=2+ci*nPos;
+    const tol=(ly.tol!=null&&ly.tol!=="")?(" (±"+ly.tol+" cm)"):"";
+    set(hr,c0,(ly.nom||"")+tol,4); if(nPos>1) merges.push(R(hr,c0)+":"+R(hr,c0+nPos-1));
+    pos.forEach((p,pi)=>set(hr+1,c0+pi,MAT_POSLAB[p]||p,5));
+  });
+  r=hr+2;
+  const NAT=["Côte projet (m)","Côte terrain (m)","Écart P-TN (cm)"];
+  for(let pk=Math.ceil(lo/10)*10; pk<=hi+0.001; pk+=10){
+    const rr=r;
+    set(rr,0,pkFmt(pk),3); merges.push(R(rr,0)+":"+R(rr+2,0));
+    for(let k=0;k<3;k++) set(rr+k,1,NAT[k],3);
+    layers.forEach((ly,ci)=>{ const c0=2+ci*nPos;
+      pos.forEach((p,pi)=>{
+        const pt=relMap[ly.nom+"|"+Math.round(pk)+"|"+p];
+        const comp=computedForce(ly.nom,pkFmt(pk),p);
+        const rel=(pt&&pt.rel!=null&&isFinite(+pt.rel))?(+pt.rel):null;
+        const pjRec=(pt&&pt.proj!=null&&isFinite(+pt.proj))?(+pt.proj):null;
+        // cellule réceptionnée : on reprend la côte projet de la fiche (pt.proj) ; sinon la côte de conception calculée
+        const pj=(rel!=null)?(pjRec!=null?pjRec:((comp!=null&&isFinite(+comp))?+comp:null)):((comp!=null&&isFinite(+comp))?+comp:pjRec);
+        if(pj!=null) set(rr,c0+pi,cote2(pj),7);
+        if(rel!=null) set(rr+1,c0+pi,cote2(rel),7);
+        // écart : même calcul/arrondi que la fiche (projet - relevé, arrondi au cm) mais affiché en cm entier, signé, sans décimale
+        if(pj!=null&&rel!=null){ var _dm=pj-rel; var _cm=(_dm<0?-1:1)*Math.floor(Math.abs(_dm)*100+0.5); set(rr+2,c0+pi,(_cm>0?"+":"")+_cm,7); }
+      });
+    });
+    r+=3;
+  }
+  const cols=[11,15]; for(let i=0;i<nC*nPos;i++) cols.push(9);
+  return {name:secName, grid, merges, cols, rowH:{0:22}};
+}
+function matriculeSheets(){
+  if(typeof projet==="undefined") return [];
+  const b=matPkBounds(); if(!b) return [];
+  const info=projet.info||{};
+  let layers=(Array.isArray(projet.layers)?projet.layers.slice():[]).filter(l=>l&&l.nom);
+  if(!layers.length) return [];
+  layers.sort((a,c)=>((cumulAbove(c.nom,"Chaussée G")||0)-(cumulAbove(a.nom,"Chaussée G")||0)));
+  const recs=matExportedPts();
+  let pos=["Accotement G","Chaussée G","Axe","Chaussée D","Accotement D"];
+  if(recs.some(p=>p&&p.pos==="Parking G")) pos.unshift("Parking G");
+  if(recs.some(p=>p&&p.pos==="Parking D")) pos.push("Parking D");
+  const relMap={}; recs.forEach(p=>{ if(p&&p.couche&&p.pos&&p.pk!=null){ const x=Math.round(pkNum(p.pk)); if(isFinite(x)) relMap[p.couche+"|"+x+"|"+p.pos]=p; }});
+  const SEC=10000, sheets=[], nSec=Math.max(1,Math.ceil((b.hi-b.lo)/SEC));
+  for(let i=0;i<nSec;i++){
+    const lo=b.lo+i*SEC, hi=Math.min(b.hi, b.lo+(i+1)*SEC);
+    if(hi-lo<1) continue;
+    sheets.push(matSectionSheet("S"+String(i+1).padStart(2,"0"), lo, hi, layers, pos, relMap, info));
+  }
+  return sheets;
+}
+function matriculeExport(){
+  const m=g("recap_msg");
+  const sh=matriculeSheets();
+  if(!sh.length){ alert("Renseignez d'abord la structure de chaussée et les PK du projet (onglet Mon projet)."); return; }
+  try{
+    if(m) m.textContent="Génération du matricule…";
+    const bytes=XLSXGEN.buildXlsx(sh, ficheLogoL(), ficheLogoR(), ficheLogoLAR(), ficheLogoRAR());
+    dlBlob(new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), "Matricule_topographique_"+(typeof projSlug==="function"?projSlug():"projet")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
+    if(m) m.textContent=sh.length+" section(s) exportée(s).";
+  }catch(e){ if(m) m.textContent=""; alert("Erreur export matricule : "+(e&&e.message?e.message:e)); }
+}
 function recapExport(){
   const pts = (typeof recapAllPoints==="function") ? recapAllPoints() : ((typeof points!=="undefined"?points:[])||[]); if(!pts.length){ alert("Aucune réception à exporter."); return; }
   function sheet(name,header,rows){ const grid=[]; const set=(r,c,v,s)=>{(grid[r]=grid[r]||[])[c]={v,s};}; header.forEach((h,c)=>set(0,c,h,5)); rows.forEach((row,ri)=>row.forEach((v,c)=>set(ri+1,c,v,7))); return {name,grid,merges:[],cols:header.map(()=>16),rowH:{0:16}}; }
@@ -3429,6 +3558,7 @@ if (g("navWork"))   g("navWork").addEventListener("click", () => showPage("work"
 if (g("navProjet")) g("navProjet").addEventListener("click", () => showPage("projet"));
 if (g("navRecap")) g("navRecap").addEventListener("click", () => showPage("recap"));
 if (g("recap_export")) g("recap_export").addEventListener("click", recapExport);
+if (g("mat_export")) g("mat_export").addEventListener("click", matriculeExport);
 if (g("recap_wkPrev")) g("recap_wkPrev").addEventListener("click", ()=>{ recapWeek--; renderRecap(); });
 if (g("recap_wkNext")) g("recap_wkNext").addEventListener("click", ()=>{ recapWeek=Math.min(0,recapWeek+1); renderRecap(); });
 if (g("recap_wkCur")) g("recap_wkCur").addEventListener("click", ()=>{ recapWeek=0; renderRecap(); });
@@ -3650,6 +3780,117 @@ if (polyData==null){ const _e=embeddedShare(); polyData = (_e && Array.isArray(_
 var extraProfiles = load("recepTopo.extra", null);   // profils hors tabulation (Implantations / Réceptions)
 if (extraProfiles==null){ const _e=embeddedShare(); extraProfiles = (_e && Array.isArray(_e.extra)) ? _e.extra : []; }
 function saveExtra(){ try{ localStorage.setItem("recepTopo.extra", JSON.stringify(extraProfiles)); }catch(e){} }
+// ===== Relevé GPS (GNSS téléphone) -> UTM 30N (EPSG:32630) =====
+function gpsUTM(lat, lon){
+  var a=6378137, f=1/298.257223563, k0=0.9996, e2=f*(2-f), ep2=e2/(1-e2), lon0=(30*6-183)*Math.PI/180;
+  var rlat=lat*Math.PI/180, rlon=lon*Math.PI/180;
+  var N=a/Math.sqrt(1-e2*Math.pow(Math.sin(rlat),2)), T=Math.pow(Math.tan(rlat),2), C=ep2*Math.pow(Math.cos(rlat),2), A=Math.cos(rlat)*(rlon-lon0);
+  var M=a*((1-e2/4-3*e2*e2/64-5*Math.pow(e2,3)/256)*rlat - (3*e2/8+3*e2*e2/32+45*Math.pow(e2,3)/1024)*Math.sin(2*rlat) + (15*e2*e2/256+45*Math.pow(e2,3)/1024)*Math.sin(4*rlat) - (35*Math.pow(e2,3)/3072)*Math.sin(6*rlat));
+  var E=k0*N*(A+(1-T+C)*Math.pow(A,3)/6+(5-18*T+T*T+72*C-58*ep2)*Math.pow(A,5)/120)+500000;
+  var Nn=k0*(M+N*Math.tan(rlat)*(A*A/2+(5-T+9*C+4*C*C)*Math.pow(A,4)/24+(61-58*T+T*T+600*C-330*ep2)*Math.pow(A,6)/720));
+  return {E:E, N:Nn};
+}
+var gpsWatch=null, gpsSamples=[];
+function gpsAvg(){
+  var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=9999;
+  var use=gpsSamples.filter(function(s){return s.acc<=seuil;}); if(!use.length) use=gpsSamples.slice();
+  if(!use.length) return null;
+  var sE=0,sN=0,sz=0,nz=0,best=Infinity;
+  use.forEach(function(s){ sE+=s.E; sN+=s.N; if(s.z!=null){sz+=s.z;nz++;} if(s.acc<best)best=s.acc; });
+  return {E:sE/use.length, N:sN/use.length, z:nz?sz/nz:null, n:use.length, best:best};
+}
+function gpsQuality(acc){
+  var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)||seuil<=0) seuil=2;
+  if(!isFinite(acc)) return {color:"#9aa7b4", label:"—", bars:0, seuil:seuil};
+  var color, label;
+  if(acc<=seuil){ color="#1a7f43"; label="Bonne"; }
+  else if(acc<=2.5*seuil){ color="#e08e0b"; label="Moyenne"; }
+  else { color="#c0392b"; label="Faible"; }
+  var bars;
+  if(acc<=seuil*0.6) bars=5; else if(acc<=seuil) bars=4; else if(acc<=seuil*1.75) bars=3;
+  else if(acc<=seuil*2.5) bars=2; else if(acc<=seuil*4) bars=1; else bars=0;
+  return {color:color, label:label, bars:bars, seuil:seuil};
+}
+function gpsGaugeHTML(acc){
+  var q=gpsQuality(acc);
+  var dot='<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+q.color+';border:2px solid #fff;box-shadow:0 0 0 1px '+q.color+';"></span>';
+  var bars='';
+  for(var i=0;i<5;i++){ var on=i<q.bars; var hgt=6+i*4; bars+='<span style="display:inline-block;width:7px;height:'+hgt+'px;margin-right:2px;vertical-align:bottom;background:'+(on?q.color:"#d8dee6")+';border-radius:1px;"></span>'; }
+  var txt = isFinite(acc) ? ('Précision <b>±'+acc.toFixed(1)+' m</b> — <b style="color:'+q.color+'">'+q.label+'</b> · seuil '+q.seuil+' m') : 'GPS arrêté';
+  return '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+dot+'<span style="display:inline-flex;align-items:flex-end;height:22px;">'+bars+'</span><span style="font-size:13px;">'+txt+'</span></div>';
+}
+function gpsRenderLive(c){
+  var gEl=g("gps_gauge"); if(gEl) gEl.innerHTML=gpsGaugeHTML(c?c.accuracy:NaN);
+  var el=g("gps_live"); if(!el) return;
+  var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=2;
+  var cur = c ? ('Position actuelle : ±'+c.accuracy.toFixed(1)+' m'+(c.accuracy<=seuil?' <span style="color:#1a7f43">✓ dans le seuil</span>':' <span style="color:#c0392b">— patientez, réception insuffisante</span>')) : '';
+  var a=gpsAvg();
+  var avg = a ? ('<b>Moyenne sur '+a.n+' mesure'+(a.n>1?'s':'')+'</b> : X='+a.E.toFixed(3)+'  ·  Y='+a.N.toFixed(3)+(a.z!=null?('  ·  Z='+a.z.toFixed(3)):'')+'  ·  meilleure ±'+a.best.toFixed(1)+' m') : 'En attente de mesures…';
+  el.innerHTML = (cur?(cur+'<br>'):'') + avg;
+}
+function gpsOnPos(pos){
+  var c=pos.coords; if(!c||!isFinite(c.latitude)) return;
+  var u=gpsUTM(c.latitude, c.longitude);
+  gpsSamples.push({E:u.E, N:u.N, z:(isFinite(c.altitude)?c.altitude:null), acc:(isFinite(c.accuracy)?c.accuracy:99), t:Date.now()});
+  if(gpsSamples.length>300) gpsSamples.shift();
+  gpsRenderLive(c);
+}
+function gpsOnErr(err){
+  var el=g("gps_live"); var msg=(err&&err.message)?err.message:("code "+(err&&err.code));
+  if(el) el.innerHTML='<span style="color:#c0392b">Erreur GPS : '+esc(msg)+'. Autorisez la localisation, activez le GPS et réessayez en extérieur.</span>';
+}
+function gpsStart(){
+  if(!navigator.geolocation){ alert("Géolocalisation non disponible sur cet appareil / navigateur."); return; }
+  gpsSamples=[];
+  try{ gpsWatch=navigator.geolocation.watchPosition(gpsOnPos, gpsOnErr, {enableHighAccuracy:true, maximumAge:0, timeout:20000}); }
+  catch(e){ alert("Erreur au démarrage du GPS : "+(e&&e.message?e.message:e)); return; }
+  if(g("gps_start")) g("gps_start").disabled=true;
+  if(g("gps_stop")) g("gps_stop").disabled=false;
+  if(g("gps_add")) g("gps_add").disabled=false;
+  var el=g("gps_live"); if(el) el.innerHTML="Acquisition des satellites… restez immobile.";
+}
+function gpsStop(){
+  if(gpsWatch!=null){ try{ navigator.geolocation.clearWatch(gpsWatch); }catch(e){} gpsWatch=null; }
+  if(g("gps_start")) g("gps_start").disabled=false;
+  if(g("gps_stop")) g("gps_stop").disabled=true;
+  gpsRenderLive(null);
+}
+function gpsAddPoint(){
+  var a=gpsAvg(); if(!a){ alert("Aucune mesure GPS. Démarrez le GPS et laissez-le capter quelques secondes."); return; }
+  var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=2;
+  if(a.best>seuil && !confirm("La meilleure précision obtenue est ±"+a.best.toFixed(1)+" m (supérieure au seuil "+seuil+" m). Enregistrer ce point quand même ?")) return;
+  if(typeof polyData==="undefined"||!Array.isArray(polyData)) polyData=[];
+  var nn=(polyData||[]).filter(function(p){return String(p&&p.st||"").indexOf("GPS")===0;}).length+1;
+  polyData.push({st:"GPS"+nn, x:a.E.toFixed(3), y:a.N.toFixed(3), z:(a.z!=null?a.z.toFixed(3):"")});
+  if(typeof polySave==="function") polySave(); if(typeof polyRender==="function") polyRender();
+  gpsSamples=[];
+  var el=g("gps_live"); if(el) el.innerHTML='Point <b>GPS'+nn+'</b> ajouté : X='+a.E.toFixed(3)+'  Y='+a.N.toFixed(3)+' (±'+a.best.toFixed(1)+' m). Déplacez-vous au point suivant, puis « Ajouter ».';
+  if(typeof leveRender==="function") leveRender();
+}
+function gpsPlanA3(){
+  if(typeof polyData==="undefined"||!Array.isArray(polyData)) polyData=[];
+  var pts=polyData.filter(function(p){ return p && isFinite(parseFloat(p.x)) && isFinite(parseFloat(p.y)); });
+  if(pts.length<3){ alert("Il faut au moins 3 points levés (GPS ou saisis) pour tracer un plan A3."); return; }
+  if(typeof parcData!=="undefined" && Array.isArray(parcData) && parcData.length){
+    if(!confirm("Le plan A3 va utiliser les "+pts.length+" points du levé (cela remplacera les bornes actuelles du volet « Générer un plan A3 »). Continuer ?")) return;
+  }
+  parcData = pts.map(function(p){ return {b:(p.st||""), x:p.x, y:p.y}; });
+  var nom=((g("gps_nom")||{}).value||"").trim();
+  if(g("parc_nom") && nom) g("parc_nom").value=nom;
+  if(g("parc_utm") && !String((g("parc_utm")||{}).value||"").trim()) g("parc_utm").value="30";
+  if(g("parc_hemi") && !String((g("parc_hemi")||{}).value||"").trim()) g("parc_hemi").value="N";
+  if(typeof parcSave==="function") parcSave();
+  if(typeof parcRender==="function") parcRender();
+  if(typeof parcGenerate==="function") parcGenerate();
+}
+function leveRender(){
+  var el=g("leve_list"); if(!el) return;
+  var pts=(typeof polyData!=="undefined"&&Array.isArray(polyData))?polyData:[];
+  if(!pts.length){ el.innerHTML='<p class="proj-help" style="margin:8px 0 0;">Aucun point levé pour le moment. Démarrez le GPS puis « Ajouter le point moyenné ».</p>'; return; }
+  var rows=pts.map(function(p,i){ return '<tr><td>'+esc(p.st||("P"+(i+1)))+'</td><td class="proj-num">'+esc(p.x)+'</td><td class="proj-num">'+esc(p.y)+'</td><td class="proj-num">'+esc(p.z||"")+'</td><td><button class="danger" type="button" onclick="leveDel('+i+')">Suppr.</button></td></tr>'; }).join("");
+  el.innerHTML='<div class="pos-panel" style="overflow-x:auto; margin-top:10px;"><table class="proj-table" style="font-size:12px;"><thead><tr><th>N°</th><th class="proj-num">X (Est)</th><th class="proj-num">Y (Nord)</th><th class="proj-num">Z</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="proj-help" style="margin:4px 0 0;">'+pts.length+' point(s) levé(s).</p>';
+}
+function leveDel(i){ if(typeof polyData==="undefined"||!Array.isArray(polyData)) return; polyData.splice(i,1); if(typeof polySave==="function") polySave(); if(typeof polyRender==="function") polyRender(); leveRender(); }
 function polySave(){ localStorage.setItem("recepTopo.poly", JSON.stringify(polyData)); }
 // cote (Z) d'une borne de la polygonale, par son nom (insensible à la casse)
 function polyZByName(name){
@@ -3735,6 +3976,12 @@ if (g("poly_file")) g("poly_file").addEventListener("change", async (e) => {
   e.target.value="";
 });
 if (g("poly_add")) g("poly_add").addEventListener("click", () => { polyData.push({st:"",x:"",y:"",z:""}); polySave(); polyRender(); });
+if (g("gps_start")) g("gps_start").addEventListener("click", gpsStart);
+if (g("gps_stop"))  g("gps_stop").addEventListener("click", gpsStop);
+if (g("gps_add"))   g("gps_add").addEventListener("click", gpsAddPoint);
+if (g("gps_reset")) g("gps_reset").addEventListener("click", function(){ gpsSamples=[]; gpsRenderLive(null); });
+if (g("gps_plan"))  g("gps_plan").addEventListener("click", gpsPlanA3);
+if (g("gps_seuil")) g("gps_seuil").addEventListener("input", function(){ gpsRenderLive(null); });
 if (g("poly_save")) g("poly_save").addEventListener("click", () => { polySave(); const m=g("poly_msg"); if(m){ m.textContent=(polyData||[]).length+" point(s) enregistré(s) ✓"; setTimeout(()=>{ if(m.textContent.indexOf("enregistré")>=0) m.textContent=""; }, 2500); } });
 if (g("poly_valider")) g("poly_valider").addEventListener("click", () => { polySave(); fillBorneList(); if(g("f_type")) g("f_type").value="chaussee"; setMode("type"); try{ window.scrollTo(0,0); }catch(e){} });
 if (g("poly_clear")) g("poly_clear").addEventListener("click", () => { if (confirm("Vider la polygonale ?")){ polyData=[]; polySave(); polyRender(); } });
@@ -4019,7 +4266,7 @@ if(g("imp_fiche_file")) g("imp_fiche_file").addEventListener("change", async (e)
     if(!res){ if(msg) msg.textContent="Format de données non reconnu."; e.target.value=""; return; }
     if(msg) msg.textContent = (res.kind==="dalot")
       ? `Dalot importé (${res.n} lecture(s)) — corrigez dans le module ci-dessous puis ré-exportez.`
-      : `${res.n} relevé(s) importé(s). Corrigez les points hors tolérance ci-dessous, puis ré-exportez la fiche.`;
+      : `${res.n} relevé(s) importé(s) en PROVISOIRE. Corrigez les points hors tolérance, puis « Rendre déf. » dans la liste (ou ré-exportez la fiche).`;
   }catch(err){ if(msg) msg.textContent="Erreur : "+err.message; }
   e.target.value="";
 });
