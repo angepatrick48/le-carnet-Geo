@@ -506,12 +506,14 @@
     <h2>Levé de parcelle</h2>
     <div id="polyGpsSec" style="border:1px solid #cfe0f5; background:#eef6ff; border-radius:8px; padding:10px; margin:6px 0 14px;">
       <h3 style="margin:0 0 6px; color:#0b3d66;">📍 Levé de parcelle</h3>
-      <p class="proj-help" style="margin:0 0 8px;">Utilise le GPS du téléphone, hors-ligne. Précision typique 3–10 m ; ±2 m seulement en bonnes conditions (ciel dégagé, téléphone récent). Restez immobile quelques secondes : les mesures sont moyennées.</p>
+      <p class="proj-help" style="margin:0 0 8px;">Utilise le GPS du téléphone, hors-ligne. Précision typique 3–10 m ; le mieux possible en bonnes conditions (ciel dégagé, téléphone récent). La « précision cible » n’est qu’un repère de couleur : l’appli enregistre toujours la <b>meilleure précision disponible</b> (aucun plafond). Restez immobile : les meilleures mesures sont moyennées. Remarque : le détail des satellites (nombre, signal) n’est pas accessible à une application web — seul le rayon de précision l’est.</p>
       <div class="row-actions" style="flex-wrap:wrap; gap:8px; align-items:center;">
         <button id="gps_start" class="ghost" type="button">▶ Démarrer le GPS</button>
         <button id="gps_stop" class="ghost" type="button" disabled>■ Arrêter</button>
-        <label class="proj-help" style="display:inline-flex; align-items:center; gap:4px;">Seuil (m)<input type="number" id="gps_seuil" value="2" step="0.5" min="0.5" style="width:64px"></label>
-        <button id="gps_add" class="ghost" type="button" disabled>➕ Ajouter le point moyenné</button>
+        <label class="proj-help" style="display:inline-flex; align-items:center; gap:4px;">Précision cible (m)<input type="number" id="gps_seuil" value="2" step="0.1" min="0.1" style="width:70px"></label>
+        <label class="proj-help" style="display:inline-flex; align-items:center; gap:4px;">Nom du point<input type="text" id="gps_ptname" placeholder="ex : B1" style="width:100px"></label>
+        <button id="gps_capture" class="ghost" type="button" disabled style="font-weight:600;">📌 Enregistrer le point</button>
+        <button id="gps_add" class="ghost" type="button" disabled>➕ Ajouter (moyenne globale)</button>
         <button id="gps_reset" class="ghost" type="button">↺ Réinit. mesures</button>
       </div>
       <div id="gps_gauge" style="margin-top:8px;"></div>
@@ -865,7 +867,7 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v67 (09/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v71 (09/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
 <div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Base Firebase</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
@@ -942,7 +944,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v67 — 9 sept. 2026.</p>
+    <p><b>Version :</b> v71 — 9 sept. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -3590,6 +3592,7 @@ function effacerProjet(){
   // « Effacer mon projet » vide aussi les relevés, la polygonale et les intercalaires
   try{ points = []; }catch(e){}
   try{ if(typeof polyData!=="undefined") polyData = []; }catch(e){}
+  try{ leveData = []; localStorage.removeItem("recepTopo.leve"); }catch(e){}
   try{ if(typeof extraProfiles!=="undefined") extraProfiles = []; }catch(e){}
   try{ recArchive=[]; implLog=[]; implCloud=[]; implQueue=[]; ["recepTopo.points.v1","recepTopo.archive","recepTopo.impl","recepTopo.implcloud","recepTopo.implq","recepTopo.poly","recepTopo.extra","recepTopo.niv","recepTopo.parc","recepTopo.parcVoie","recepTopo.borne","recepTopo.decro"].forEach(k=>localStorage.removeItem(k)); }catch(e){}
   try{ if(typeof polyRender==="function") polyRender(); }catch(e){}
@@ -3782,15 +3785,20 @@ if (extraProfiles==null){ const _e=embeddedShare(); extraProfiles = (_e && Array
 function saveExtra(){ try{ localStorage.setItem("recepTopo.extra", JSON.stringify(extraProfiles)); }catch(e){} }
 // ===== Relevé GPS (GNSS téléphone) -> UTM 30N (EPSG:32630) =====
 function gpsUTM(lat, lon){
-  var a=6378137, f=1/298.257223563, k0=0.9996, e2=f*(2-f), ep2=e2/(1-e2), lon0=(30*6-183)*Math.PI/180;
+  var a=6378137, f=1/298.257223563, k0=0.9996, e2=f*(2-f), ep2=e2/(1-e2);
+  var zone=Math.floor((lon+180)/6)+1; if(zone<1)zone=1; if(zone>60)zone=60;   // zone UTM déduite de la longitude
+  var lon0=(zone*6-183)*Math.PI/180;
   var rlat=lat*Math.PI/180, rlon=lon*Math.PI/180;
   var N=a/Math.sqrt(1-e2*Math.pow(Math.sin(rlat),2)), T=Math.pow(Math.tan(rlat),2), C=ep2*Math.pow(Math.cos(rlat),2), A=Math.cos(rlat)*(rlon-lon0);
   var M=a*((1-e2/4-3*e2*e2/64-5*Math.pow(e2,3)/256)*rlat - (3*e2/8+3*e2*e2/32+45*Math.pow(e2,3)/1024)*Math.sin(2*rlat) + (15*e2*e2/256+45*Math.pow(e2,3)/1024)*Math.sin(4*rlat) - (35*Math.pow(e2,3)/3072)*Math.sin(6*rlat));
   var E=k0*N*(A+(1-T+C)*Math.pow(A,3)/6+(5-18*T+T*T+72*C-58*ep2)*Math.pow(A,5)/120)+500000;
   var Nn=k0*(M+N*Math.tan(rlat)*(A*A/2+(5-T+9*C+4*C*C)*Math.pow(A,4)/24+(61-58*T+T*T+600*C-330*ep2)*Math.pow(A,6)/720));
-  return {E:E, N:Nn};
+  if(lat<0) Nn += 10000000;                                   // hémisphère sud
+  return {E:E, N:Nn, zone:zone, hemi:(lat>=0?"N":"S")};
 }
-var gpsWatch=null, gpsSamples=[];
+var gpsWatch=null, gpsSamples=[], gpsZone=null, gpsHemi="N";
+var leveData = (typeof load==="function") ? load("recepTopo.leve", []) : []; if(!Array.isArray(leveData)) leveData=[];
+function leveSave(){ try{ localStorage.setItem("recepTopo.leve", JSON.stringify(leveData)); }catch(e){} }
 function gpsAvg(){
   var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=9999;
   var use=gpsSamples.filter(function(s){return s.acc<=seuil;}); if(!use.length) use=gpsSamples.slice();
@@ -3821,16 +3829,34 @@ function gpsGaugeHTML(acc){
 }
 function gpsRenderLive(c){
   var gEl=g("gps_gauge"); if(gEl) gEl.innerHTML=gpsGaugeHTML(c?c.accuracy:NaN);
+  var cap=g("gps_capture");
+  if(cap){
+    var seuilC=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuilC)) seuilC=2;
+    var accC=c?c.accuracy:NaN;
+    if(isFinite(accC)){
+      cap.disabled=false;
+      var good=accC<=seuilC;
+      cap.textContent = good ? ("📌 Enregistrer le point (±"+accC.toFixed(1)+" m ✓)") : ("📌 Enregistrer quand même (±"+accC.toFixed(1)+" m)");
+      cap.style.background = good ? "#1a7f43" : ""; cap.style.color = good ? "#fff" : "";
+    } else {
+      cap.disabled=true; cap.textContent="📌 Enregistrer le point"; cap.style.background=""; cap.style.color="";
+    }
+  }
   var el=g("gps_live"); if(!el) return;
   var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=2;
   var cur = c ? ('Position actuelle : ±'+c.accuracy.toFixed(1)+' m'+(c.accuracy<=seuil?' <span style="color:#1a7f43">✓ dans le seuil</span>':' <span style="color:#c0392b">— patientez, réception insuffisante</span>')) : '';
+  var nAll=gpsSamples.length, bestAll=Infinity; gpsSamples.forEach(function(s){ if(s.acc<bestAll) bestAll=s.acc; });
+  var bestTxt = isFinite(bestAll) ? ('Meilleure précision atteinte : <b style="color:#0b3d66">±'+bestAll.toFixed(1)+' m</b>') : '';
   var a=gpsAvg();
-  var avg = a ? ('<b>Moyenne sur '+a.n+' mesure'+(a.n>1?'s':'')+'</b> : X='+a.E.toFixed(3)+'  ·  Y='+a.N.toFixed(3)+(a.z!=null?('  ·  Z='+a.z.toFixed(3)):'')+'  ·  meilleure ±'+a.best.toFixed(1)+' m') : 'En attente de mesures…';
-  el.innerHTML = (cur?(cur+'<br>'):'') + avg;
+  var avg = a ? ('Moyenne ('+a.n+' mesure'+(a.n>1?'s':'')+' retenue'+(a.n>1?'s':'')+') : X='+a.E.toFixed(3)+'  ·  Y='+a.N.toFixed(3)+(a.z!=null?('  ·  Z='+a.z.toFixed(3)):'')) : 'En attente de mesures…';
+  var cnt = nAll ? ('<span style="color:#667">'+nAll+' mesure(s) GPS reçue(s)</span>') : '';
+  var zTxt = gpsZone ? ('Zone détectée : <b style="color:#0b3d66">UTM '+gpsZone+gpsHemi+'</b>') : '';
+  el.innerHTML = (cur?(cur+'<br>'):'') + (zTxt?(zTxt+'<br>'):'') + (bestTxt?(bestTxt+'<br>'):'') + avg + (cnt?('<br>'+cnt):'');
 }
 function gpsOnPos(pos){
   var c=pos.coords; if(!c||!isFinite(c.latitude)) return;
   var u=gpsUTM(c.latitude, c.longitude);
+  gpsZone=u.zone; gpsHemi=u.hemi;
   gpsSamples.push({E:u.E, N:u.N, z:(isFinite(c.altitude)?c.altitude:null), acc:(isFinite(c.accuracy)?c.accuracy:99), t:Date.now()});
   if(gpsSamples.length>300) gpsSamples.shift();
   gpsRenderLive(c);
@@ -3859,38 +3885,60 @@ function gpsAddPoint(){
   var a=gpsAvg(); if(!a){ alert("Aucune mesure GPS. Démarrez le GPS et laissez-le capter quelques secondes."); return; }
   var seuil=parseFloat((g("gps_seuil")||{}).value); if(!isFinite(seuil)) seuil=2;
   if(a.best>seuil && !confirm("La meilleure précision obtenue est ±"+a.best.toFixed(1)+" m (supérieure au seuil "+seuil+" m). Enregistrer ce point quand même ?")) return;
-  if(typeof polyData==="undefined"||!Array.isArray(polyData)) polyData=[];
-  var nn=(polyData||[]).filter(function(p){return String(p&&p.st||"").indexOf("GPS")===0;}).length+1;
-  polyData.push({st:"GPS"+nn, x:a.E.toFixed(3), y:a.N.toFixed(3), z:(a.z!=null?a.z.toFixed(3):"")});
-  if(typeof polySave==="function") polySave(); if(typeof polyRender==="function") polyRender();
+  var nm=((g("gps_ptname")||{}).value||"").trim() || ("P"+((leveData||[]).length+1));
+  leveData.push({st:nm, x:a.E.toFixed(3), y:a.N.toFixed(3), z:(a.z!=null?a.z.toFixed(3):"")});
+  leveSave(); if(typeof leveRender==="function") leveRender();
   gpsSamples=[];
-  var el=g("gps_live"); if(el) el.innerHTML='Point <b>GPS'+nn+'</b> ajouté : X='+a.E.toFixed(3)+'  Y='+a.N.toFixed(3)+' (±'+a.best.toFixed(1)+' m). Déplacez-vous au point suivant, puis « Ajouter ».';
-  if(typeof leveRender==="function") leveRender();
+  var pn=g("gps_ptname"); if(pn) pn.value="";
+  var el=g("gps_live"); if(el) el.innerHTML='Point <b>'+esc(nm)+'</b> ajouté : X='+a.E.toFixed(3)+'  Y='+a.N.toFixed(3)+' (±'+a.best.toFixed(1)+' m). Point suivant…';
+}
+function gpsCapture(){
+  if(!gpsSamples.length){ alert("Démarrez le GPS et attendez une première mesure."); return; }
+  var seuil=parseFloat((g("gps_seuil")||{}).value);   // cible (peut être vide) — AUCUN plafond
+  var best=Infinity; gpsSamples.forEach(function(s){ if(s.acc<best) best=s.acc; });
+  var win=Math.max(1.0, best*0.5);
+  var recent=gpsSamples.filter(function(s){ return s.acc<=best+win; });   // grappe des mesures LES PLUS PRÉCISES
+  if(!recent.length) recent=gpsSamples.slice();
+  if(isFinite(seuil) && best>seuil){
+    if(!confirm("La meilleure précision atteinte est ±"+best.toFixed(1)+" m (cible "+seuil+" m non atteinte). Enregistrer avec la meilleure précision disponible ?")) return;
+  }
+  var sE=0,sN=0,sz=0,nz=0;
+  recent.forEach(function(s){ sE+=s.E; sN+=s.N; if(s.z!=null){sz+=s.z;nz++;} });
+  var E=sE/recent.length, N=sN/recent.length, z=nz?sz/nz:null;
+  var nm=((g("gps_ptname")||{}).value||"").trim() || ("P"+((leveData||[]).length+1));
+  leveData.push({st:nm, x:E.toFixed(3), y:N.toFixed(3), z:(z!=null?z.toFixed(3):"")});
+  leveSave(); if(typeof leveRender==="function") leveRender();
+  gpsSamples=[];
+  var pn=g("gps_ptname"); if(pn) pn.value="";
+  var el=g("gps_live"); if(el) el.innerHTML='Point <b>'+esc(nm)+'</b> enregistré : X='+E.toFixed(3)+'  Y='+N.toFixed(3)+' (±'+best.toFixed(1)+' m sur '+recent.length+' mesure'+(recent.length>1?'s':'')+'). Point suivant…';
 }
 function gpsPlanA3(){
-  if(typeof polyData==="undefined"||!Array.isArray(polyData)) polyData=[];
-  var pts=polyData.filter(function(p){ return p && isFinite(parseFloat(p.x)) && isFinite(parseFloat(p.y)); });
-  if(pts.length<3){ alert("Il faut au moins 3 points levés (GPS ou saisis) pour tracer un plan A3."); return; }
+  var pts=(Array.isArray(leveData)?leveData:[]).filter(function(p){ return p && isFinite(parseFloat(p.x)) && isFinite(parseFloat(p.y)); });
+  if(pts.length<3){ alert("Il faut au moins 3 points levés pour tracer un plan A3."); return; }
   if(typeof parcData!=="undefined" && Array.isArray(parcData) && parcData.length){
-    if(!confirm("Le plan A3 va utiliser les "+pts.length+" points du levé (cela remplacera les bornes actuelles du volet « Générer un plan A3 »). Continuer ?")) return;
+    if(!confirm("Le plan A3 va utiliser les "+pts.length+" points levés (cela remplacera les bornes actuelles du volet « Générer un plan A3 »). Continuer ?")) return;
   }
   parcData = pts.map(function(p){ return {b:(p.st||""), x:p.x, y:p.y}; });
   var nom=((g("gps_nom")||{}).value||"").trim();
   if(g("parc_nom") && nom) g("parc_nom").value=nom;
-  if(g("parc_utm") && !String((g("parc_utm")||{}).value||"").trim()) g("parc_utm").value="30";
-  if(g("parc_hemi") && !String((g("parc_hemi")||{}).value||"").trim()) g("parc_hemi").value="N";
+  if(g("parc_utm")) g("parc_utm").value = (gpsZone||"30");
+  if(g("parc_hemi")) g("parc_hemi").value = (gpsHemi||"N");
   if(typeof parcSave==="function") parcSave();
   if(typeof parcRender==="function") parcRender();
   if(typeof parcGenerate==="function") parcGenerate();
+  if(g("parc_utm")) g("parc_utm").value="";      // la zone se vide automatiquement après génération
+  gpsZone=null; gpsHemi="N";
+  if(typeof gpsRenderLive==="function") gpsRenderLive(null);
 }
 function leveRender(){
   var el=g("leve_list"); if(!el) return;
-  var pts=(typeof polyData!=="undefined"&&Array.isArray(polyData))?polyData:[];
-  if(!pts.length){ el.innerHTML='<p class="proj-help" style="margin:8px 0 0;">Aucun point levé pour le moment. Démarrez le GPS puis « Ajouter le point moyenné ».</p>'; return; }
+  var pts=(Array.isArray(leveData))?leveData:[];
+  var head='<h3 style="margin:14px 0 4px; color:#0b3d66; border-top:1px solid #cfe0f5; padding-top:10px;">Points levés</h3>';
+  if(!pts.length){ el.innerHTML=head+'<p class="proj-help" style="margin:2px 0 0;">Aucun point levé pour le moment. Démarrez le GPS puis « Enregistrer le point ».</p>'; return; }
   var rows=pts.map(function(p,i){ return '<tr><td>'+esc(p.st||("P"+(i+1)))+'</td><td class="proj-num">'+esc(p.x)+'</td><td class="proj-num">'+esc(p.y)+'</td><td class="proj-num">'+esc(p.z||"")+'</td><td><button class="danger" type="button" onclick="leveDel('+i+')">Suppr.</button></td></tr>'; }).join("");
-  el.innerHTML='<div class="pos-panel" style="overflow-x:auto; margin-top:10px;"><table class="proj-table" style="font-size:12px;"><thead><tr><th>N°</th><th class="proj-num">X (Est)</th><th class="proj-num">Y (Nord)</th><th class="proj-num">Z</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="proj-help" style="margin:4px 0 0;">'+pts.length+' point(s) levé(s).</p>';
+  el.innerHTML=head+'<div class="pos-panel" style="overflow-x:auto;"><table class="proj-table" style="font-size:12px;"><thead><tr><th>Nom</th><th class="proj-num">X (Est)</th><th class="proj-num">Y (Nord)</th><th class="proj-num">Z</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="proj-help" style="margin:4px 0 0;">'+pts.length+' point(s) levé(s).</p>';
 }
-function leveDel(i){ if(typeof polyData==="undefined"||!Array.isArray(polyData)) return; polyData.splice(i,1); if(typeof polySave==="function") polySave(); if(typeof polyRender==="function") polyRender(); leveRender(); }
+function leveDel(i){ if(!Array.isArray(leveData)) return; leveData.splice(i,1); leveSave(); leveRender(); }
 function polySave(){ localStorage.setItem("recepTopo.poly", JSON.stringify(polyData)); }
 // cote (Z) d'une borne de la polygonale, par son nom (insensible à la casse)
 function polyZByName(name){
@@ -3979,6 +4027,7 @@ if (g("poly_add")) g("poly_add").addEventListener("click", () => { polyData.push
 if (g("gps_start")) g("gps_start").addEventListener("click", gpsStart);
 if (g("gps_stop"))  g("gps_stop").addEventListener("click", gpsStop);
 if (g("gps_add"))   g("gps_add").addEventListener("click", gpsAddPoint);
+if (g("gps_capture")) g("gps_capture").addEventListener("click", gpsCapture);
 if (g("gps_reset")) g("gps_reset").addEventListener("click", function(){ gpsSamples=[]; gpsRenderLive(null); });
 if (g("gps_plan"))  g("gps_plan").addEventListener("click", gpsPlanA3);
 if (g("gps_seuil")) g("gps_seuil").addEventListener("input", function(){ gpsRenderLive(null); });
