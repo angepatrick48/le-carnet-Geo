@@ -867,7 +867,7 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v71 (09/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v73 (15/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
 <div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Base Firebase</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
@@ -944,7 +944,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v71 — 9 sept. 2026.</p>
+    <p><b>Version :</b> v73 — 15 sept. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -971,7 +971,9 @@
     </div>
     <div id="lic_updatebox" style="display:none">
       <h2>Mise à jour requise</h2>
-      <p>Une mise à jour de <b>Le Carnet‑Géo</b> est nécessaire pour continuer. Connectez‑vous à <b>Internet</b> un instant : l'application se met à jour automatiquement, puis fonctionne à nouveau normalement (y compris hors‑ligne).</p>
+      <p>Une mise à jour de <b>Le Carnet‑Géo</b> est nécessaire pour continuer. Connectez‑vous à <b>Internet</b>, puis appuyez sur « Réessayer ». L'application se remet à jour et fonctionne à nouveau (y compris hors‑ligne).</p>
+      <div class="lic-actions"><button type="button" id="lic_recheck">Réessayer (je suis connecté)</button></div>
+      <div id="lic_upd_msg" class="lic-msg"></div>
       <p class="lic-contact">En cas de difficulté : kouameangepatrickmoro@gmail.com</p>
     </div>
   </div>
@@ -1513,7 +1515,7 @@ function renderPosPanel(){
   const rows = curPositions().map((pos,i) => {
     const z = projFor(couche, pk, pos);
     const auto = z != null;
-    const projCell = `<td><input type="number" step="${decFor(couche)===2?'0.01':'0.001'}" id="cp_${i}" class="${auto?'autofilled':''}" value="${auto?z.toFixed(decFor(couche)):''}" placeholder="${auto?'':'manuel'}"></td>`;
+    const projCell = `<td><input type="number" step="0.01" id="cp_${i}" class="${auto?'autofilled':''}" value="${auto?cote2(z):''}" placeholder="${auto?'':'manuel'}"></td>`;
     if (lev){
       const lecPh = isFilEau(pos) ? 'lecture fil d\'eau (mm)' : (isDrainage(couche) ? 'lecture bec (mm)' : 'lecture (mm)');
       const relCell = (couche === "PST")
@@ -1592,7 +1594,7 @@ function updateRow(i){
   const v = rowVals(i); if (!v) return;
   if (LEVELING(couche)){
     const relCell = g("rel_"+i);
-    if (relCell) relCell.textContent = isFinite(v.rel) ? v.rel.toFixed(decFor(couche)) : "—";
+    if (relCell) relCell.textContent = isFinite(v.rel) ? cote2(v.rel) : "—";
   }
   const cell = g("res_"+i);
   if (isFinite(v.proj) && isFinite(v.rel)){
@@ -1913,8 +1915,8 @@ function render(){
       <td>${esc(p.couche)}</td>
       <td>${esc(p.pk)}</td>
       <td>${esc(posLabel(p.pos))}</td>
-      <td class="num">${p.proj.toFixed(decFor(p.couche))}</td>
-      <td class="num">${p.rel.toFixed(decFor(p.couche))}</td>
+      <td class="num">${cote2(p.proj)}</td>
+      <td class="num">${cote2(p.rel)}</td>
       <td class="num" style="color:${ok?'#1a7f43':'#c0392b'};font-weight:600">${ecartDisplay(p)}</td>
       <td class="num">${p.ep!=null?p.ep:"—"}</td>
       <td><span class="badge ${ok?'ok':'no'}">${ok?'Conforme':'Non conforme'}</span></td>
@@ -2280,7 +2282,7 @@ function updateNet(){
     banner.hidden = true;
   }
 }
-window.addEventListener("online", updateNet); window.addEventListener("online", function(){ try{ licSyncTrial(); }catch(e){} });
+window.addEventListener("online", updateNet); window.addEventListener("online", function(){ try{ licSyncTrial(); }catch(e){} }); window.addEventListener("online", function(){ try{ licOnlineRecheck(); }catch(e){} });
 window.addEventListener("online", () => { try{ netFlush(); netPull(()=>{ if(g("recapPage") && g("recapPage").style.display!=="none"){ try{ renderRecap(); }catch(e){} } try{ renderNetStatus(); }catch(e){} }); }catch(e){} });
 window.addEventListener("offline", updateNet);
 
@@ -4613,6 +4615,17 @@ function licDaysLeft(){ const d=licData(); if(!d) return null; if(d.perpetual) r
 const LIC_CHECK_MAX_DAYS = 15;
 function licLastCheck(){ let t=parseInt(localStorage.getItem("recepTopo.lastcheck")||"",10); if(!isFinite(t)){ t=licInstallTs(); try{localStorage.setItem("recepTopo.lastcheck",String(t));}catch(e){} } return t; }
 function licTouchCheck(){ try{ localStorage.setItem("recepTopo.lastcheck", String(Date.now())); }catch(e){} }
+function licOnlineRecheck(cb){
+  // Débloque le contrôle des 15 jours dès qu'il y a une connexion Internet — indépendant de la synchro Firebase.
+  var online = !(typeof navigator!=="undefined" && navigator.onLine===false);
+  if(!online){ if(cb) cb(false); return false; }
+  licTouchCheck(); try{ licCheck(); }catch(e){}
+  // rafraîchit le cache en arrière-plan (récupère une nouvelle version si disponible)
+  try{ if(typeof fetch==="function"){ fetch(((typeof location!=="undefined"&&location.pathname)||"")+"?lic="+Date.now(), {cache:"no-store"}).catch(function(){}); } }catch(e){}
+  try{ if(typeof navigator!=="undefined" && navigator.serviceWorker && navigator.serviceWorker.getRegistration){ navigator.serviceWorker.getRegistration().then(function(r){ if(r&&r.update) r.update(); }).catch(function(){}); } }catch(e){}
+  if(cb) cb(true);
+  return true;
+}
 function licStale(){ if(!netOn()) return false; return (Date.now()-licLastCheck())/86400000 > LIC_CHECK_MAX_DAYS; }
 function licCheck(){ const l=g("licLock"); if(!l) return;
   const expired = (!isLicensed() && trialDaysLeft()<=0);
@@ -4638,6 +4651,13 @@ function activateLicenseFrom(inpId,msgId){ const inp=g(inpId), msg=msgId?g(msgId
   if(msg){ msg.style.color="#c0392b"; msg.textContent="Clé de licence invalide."; }
 }
 if(g("lic_activate")) g("lic_activate").addEventListener("click", ()=>activateLicenseFrom("lic_key","lic_msg"));
+if(g("lic_recheck")) g("lic_recheck").addEventListener("click", function(){
+  var m=g("lic_upd_msg"); if(m){ m.style.color="#0b3d66"; m.textContent="Vérification de la connexion…"; }
+  licOnlineRecheck(function(done){
+    if(m){ if(done){ m.style.color="#1a7f43"; m.textContent="À jour ✓ — vous pouvez continuer."; }
+            else { m.style.color="#c0392b"; m.textContent="Aucune connexion détectée. Activez Internet (données/Wi‑Fi), puis réessayez."; } }
+  });
+});
 if(g("lic_key")) g("lic_key").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); activateLicenseFrom("lic_key","lic_msg"); } });
 if(g("ab_lic_btn")) g("ab_lic_btn").addEventListener("click", ()=>activateLicenseFrom("ab_lic_key","ab_lic_msg"));
 
@@ -4656,7 +4676,7 @@ if(g("helpTab1")) g("helpTab1").addEventListener("click", ()=>helpShow(1));
 if(g("helpTab2")) g("helpTab2").addEventListener("click", ()=>helpShow(2));
 if(g("helpClose")) g("helpClose").addEventListener("click", ()=>{ const o=g("helpOverlay"); if(o) o.classList.add("ov-hidden"); });
 if(g("helpOverlay")) g("helpOverlay").addEventListener("click", (e)=>{ if(e.target && e.target.id==="helpOverlay") e.currentTarget.classList.add("ov-hidden"); });
-licInstallTs(); licCheck();
+licInstallTs(); licCheck(); try{ licOnlineRecheck(); }catch(e){}
 // démarrage robuste : chaque étape est isolée pour qu'une erreur n'empêche pas le reste (dont la navigation)
 [fillDatalist, applyCfg, fillCoucheOptions, nivRestore, nivRenderTable, polyRender, parcRender, paintModes, updateModeUI, renderPosPanel, render, updateNet, renderExtra].forEach(fn => { try{ fn(); }catch(e){ console && console.warn && console.warn("init "+(fn&&fn.name)+":",e); } });
 // « Mon projet » n'est rendu qu'à son ouverture (showPage) : plus léger et plus sûr au démarrage.
