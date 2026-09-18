@@ -821,21 +821,15 @@
       <div class="row-actions"><button id="recap_export" class="ghost" type="button">⬇ Exporter le récap (Excel)</button><button id="mat_export" class="ghost" type="button">⬇ Matricule topographique (Excel)</button><span class="proj-help" id="recap_msg"></span></div>
     </div>
     <div class="card">
-      <h2>Synchronisation réseau (équipe)</h2>
-      <p class="proj-help">Partage le récap entre tous les topographes du même projet. Chaque relevé est envoyé à une base en ligne (Firebase) quand il y a du réseau ; hors-ligne, il est mis en file d'attente et envoyé au retour de la connexion.</p>
+      <h2>Synchronisation d'équipe (Google Sheets)</h2>
+      <p class="proj-help">Tous les utilisateurs ayant le <b>même « Nom du projet »</b> partagent automatiquement les mêmes données. Chaque relevé est envoyé à votre feuille Google quand il y a du réseau ; hors-ligne, il est mis en file d'attente et envoyé au retour de la connexion. La <b>synoptique</b>, le <b>matricule</b> et le <b>rapport hebdomadaire</b> se remplissent automatiquement à partir des activités de toute l'équipe.</p>
       <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
-        <label class="proj-help" style="flex:1 1 280px">URL base Firebase<br><input type="text" id="net_url" placeholder="https://xxxx-default-rtdb.firebaseio.com" style="width:100%"></label>
-        <label class="proj-help" style="flex:1 1 200px">Clé API Web Firebase<br><input type="text" id="net_key" placeholder="AIza..." style="width:100%"></label>
+        <label class="proj-help" style="flex:1 1 380px">Lien du script Google (Apps Script)<br><input type="text" id="net_url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%"></label>
         <label class="proj-help"><input type="checkbox" id="net_on"> Activer</label>
-        <button id="net_sync" class="ghost" type="button">Synchroniser</button>
-      </div>
-      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px">
-        <label class="proj-help" style="flex:1 1 200px">E-mail<br><input type="email" id="net_email" autocomplete="username" placeholder="vous@exemple.com" style="width:100%"></label>
-        <label class="proj-help" style="flex:1 1 150px">Mot de passe<br><input type="password" id="net_pw" autocomplete="current-password" placeholder="mot de passe" style="width:100%"></label>
-        <button id="net_login" class="ghost" type="button">Se connecter</button>
-        <button id="net_logout" class="ghost" type="button">Se déconnecter</button>
+        <button id="net_sync" class="ghost" type="button">Synchroniser maintenant</button>
       </div>
       <div class="proj-help" id="net_status" style="margin-top:6px"></div>
+      <p class="proj-help" style="margin-top:4px">La <b>clé de partage est le nom du projet</b> (onglet « Mon projet »). Choisissez un nom précis, identique pour toute l'équipe. Le lien du script est fourni une fois par l'administrateur.</p>
     </div>
     <div class="card">
       <h2>Rapport hebdomadaire des activités (lundi → dimanche)</h2>
@@ -867,10 +861,10 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v75 (16/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v77 (18/09/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
-<div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Base Firebase</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
+<div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Synchro Google Sheets</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
 <p>Le Carnet Géo enregistre les <b>réceptions</b> et <b>implantations</b> topographiques (structure de chaussée, assainissement &amp; drainage, ouvrages hydrauliques), calcule les cotes projet, produit les fiches Excel et un récap des travaux. Il fonctionne hors‑ligne et peut se synchroniser en équipe.</p>
 <h3>1. Mon projet</h3>
 <ul>
@@ -900,8 +894,8 @@
 <li><b>Synoptique</b> : avancement par type, volet <b>implantations</b>, et <b>comparatif linéaire Projet / Implanté / Réceptionné</b>.</li>
 <li><b>Export Excel</b> (rapport + synoptique + implantation).</li>
 </ul>
-<h3>5. Synchronisation réseau (équipe)</h3>
-<p>Récap → Synchronisation réseau : connecte l'app à une base en ligne (Firebase) pour partager le récap entre tous les topographes du même projet, sans doublon. Voir le <b>Manuel — Base Firebase</b>.</p>
+<h3>5. Synchronisation d'équipe (Google Sheets)</h3>
+<p>Récap → Synchronisation d'équipe : tous les topographes ayant le <b>même « Nom du projet »</b> partagent automatiquement les mêmes données ; la synoptique, le matricule et le rapport hebdomadaire se remplissent à partir des activités de tous. Il suffit de coller le <b>lien du script Google</b> et de cocher « Activer ». Voir le <b>Manuel — Synchro Google Sheets</b>.</p>
 <h3>6. Installation &amp; hors‑ligne</h3>
 <ul>
 <li><b>Android</b> : menu du navigateur → « Ajouter à l'écran d'accueil », ou installez l'application (APK).</li>
@@ -910,31 +904,25 @@
 </ul>
 <h3>7. Partage avec l'équipe</h3>
 <p>Dans Mon projet : « Générer l'application avec projet intégré » crée un .html contenant votre projet (vos topographes le reçoivent rempli). « Exporter seulement le projet (.lcg) » / « Importer un projet d'équipe » échangent le projet.</p></div><div id="helpMan2" class="man" style="display:none"><h3>Objectif</h3>
-<p>Créer une base en ligne gratuite (Firebase) pour partager le récap entre topographes. À faire une seule fois, depuis un ordinateur.</p>
-<h3>Étape 1 — Créer le projet</h3>
-<p><b>console.firebase.google.com</b> → connexion Google → « Ajouter un projet » (plan Spark, gratuit).</p>
-<h3>Étape 2 — Realtime Database</h3>
-<p>Menu « Realtime Database » → « Créer une base de données » → région → mode test. L'URL de la base finit par <code>.firebaseio.com</code> (ce n'est PAS l'adresse de la console).</p>
-<h3>Étape 3 — Règles</h3>
-<p>Realtime Database → onglet Règles :</p>
-<p><code>{ "rules": { ".read": "auth != null", ".write": "auth != null" } }</code> → Publier.</p>
-<h3>Étape 4 — Authentification</h3>
-<p>Authentication → Commencer → onglet « Sign‑in method » → « Email/Password » → activer le <b>1er interrupteur</b> « Adresse e‑mail/Mot de passe » → Enregistrer.</p>
-<h3>Étape 5 — Créer les comptes</h3>
-<p>Authentication → onglet Users → « Ajouter un utilisateur » (e‑mail + mot de passe, un par topographe).</p>
-<h3>Étape 6 — URL &amp; clé API Web</h3>
-<ul><li><b>URL</b> : Realtime Database, en haut de l'onglet Données (…firebaseio.com).</li><li><b>Clé API Web</b> : ⚙ Paramètres du projet → Général → « Clé d'API Web » (commence par <code>AIza…</code> ; ce n'est pas le numéro de projet).</li></ul>
-<h3>Étape 7 — Configurer l'application</h3>
-<p>Récap → Synchronisation réseau : collez l'URL et la clé, cochez « Activer », saisissez e‑mail + mot de passe → « Se connecter ». Le statut passe au vert « connecté ».</p>
+<p>Mettre en commun les données de l'équipe via une feuille <b>Google Sheets</b> (sans Firebase). La <b>clé de partage est le nom du projet</b> : tous ceux qui ont le même nom partagent les mêmes données. À installer une seule fois, depuis un ordinateur.</p>
+<h3>Étape 1 — Créer la feuille</h3>
+<p><b>sheets.google.com</b> → « Feuille de calcul vierge ». Donnez-lui un nom.</p>
+<h3>Étape 2 — Coller le script</h3>
+<p>Menu <b>Extensions ▸ Apps Script</b>. Effacez le code par défaut, collez le script fourni (<code>CarnetGeo_GoogleAppsScript.gs</code>), puis Enregistrer.</p>
+<h3>Étape 3 — Déployer en application Web</h3>
+<p><b>Déployer ▸ Nouveau déploiement</b> → type <b>Application Web</b> → « Exécuter en tant que : Moi » · « Qui a accès : Tout le monde » → Déployer, puis autoriser. Copiez l'URL qui finit par <code>/exec</code> (pas /dev).</p>
+<h3>Étape 4 — Configurer l'application</h3>
+<p>Récap → Synchronisation d'équipe : collez le <b>lien du script</b> (…/exec), cochez « Activer ». Vérifiez que le <b>Nom du projet</b> (onglet Mon projet) est <b>identique</b> pour toute l'équipe. Le statut passe au vert « à jour ». Répétez sur chaque appareil (même lien, même nom de projet).</p>
+<h3>Où sont les données</h3>
+<p>Dans la feuille Google, deux onglets se créent automatiquement : <b>receptions</b> et <b>implantations</b> (colonnes project · id · json · updated). Vous pouvez tout voir et sauvegarder depuis Google.</p>
 <h3>Dépannage</h3>
 <ul>
-<li><b>Failed to fetch</b> : pas de réseau, ou app en aperçu/fichier local → utilisez le lien en ligne ; vérifiez URL/clé.</li>
-<li><b>CONFIGURATION_NOT_FOUND</b> : Authentication non activée → étape 4.</li>
-<li><b>PASSWORD_LOGIN_DISABLED</b> : activez le 1er interrupteur Email/Password → étape 4.</li>
-<li><b>EMAIL_NOT_FOUND / identifiants incorrects</b> : créez l'utilisateur → étape 5.</li>
-<li><b>Permission denied</b> : publiez les règles auth != null et connectez‑vous.</li>
+<li><b>Statut « désactivé »</b> : cochez « Activer » et collez le lien …/exec.</li>
+<li><b>« Lien du script incorrect »</b> : l'URL doit ressembler à <code>https://script.google.com/macros/s/…/exec</code>.</li>
+<li><b>Rien ne se partage</b> : le <b>nom du projet</b> doit être exactement le même sur tous les appareils, et il faut du réseau. Hors-ligne, les relevés partent au retour de la connexion.</li>
+<li><b>Après une nouvelle version du script</b> : Déployer ▸ Gérer les déploiements ▸ (crayon) ▸ Nouvelle version. L'URL /exec ne change pas.</li>
 </ul>
-<p style="color:#5b6b7a">Sécurité : seuls les comptes créés dans Authentication accèdent à la base. L'URL et la clé ne sont pas des secrets ; c'est le mot de passe qui protège.</p></div></div></div>
+<p style="color:#5b6b7a">Sécurité : la clé est le nom du projet. Qui a le lien ET le nom exact peut lire/écrire. Choisissez un nom précis, peu évident, identique pour l'équipe.</p></div></div></div>
 <div id="aboutOverlay" class="ov-hidden">
   <div class="ov-box">
     <button type="button" id="aboutClose" class="ov-close" aria-label="Fermer">✕</button>
@@ -944,7 +932,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v75 — 16 sept. 2026.</p>
+    <p><b>Version :</b> v77 — 18 sept. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -1202,37 +1190,51 @@ function promote(id){ const p=(typeof points!=="undefined")?points.find(x=>x&&x.
 function netCfg(){ return (typeof projet!=="undefined" && projet.net) ? projet.net : {url:"",on:false}; }
 function netOn(){ const c=netCfg(); return !!(c.on && c.url && /^https?:\/\//i.test(String(c.url).trim())); }
 function netBase(){ return String(netCfg().url||"").trim().replace(/\/+$/,""); }
-function netProjId(){ const i=(typeof projet!=="undefined"&&projet.info)?projet.info:{}; const s=[i.nom,i.troncon,i.pkd,i.pkf].join("|"); let h=2166136261; for(let k=0;k<s.length;k++){ h^=s.charCodeAt(k); h=(h*16777619)>>>0; } return "p"+h.toString(36); }
-function netUrl(path){ return netBase()+"/carnetgeo/"+netProjId()+"/"+path+".json"; }
+function netProjKey(){ const i=(typeof projet!=="undefined"&&projet.info)?projet.info:{}; return String(i.nom||"").trim().toLowerCase().replace(/\s+/g," "); }
+function netProjId(){ return netProjKey(); }   // clé de partage = NOM DU PROJET (normalisé)
 function netSaveQueue(){ try{ localStorage.setItem("recepTopo.netq", JSON.stringify(netQueue)); }catch(e){} }
 function netEnqueue(pt){ if(!pt||!pt.id) return; if(!Array.isArray(netQueue)) netQueue=[]; netQueue.push(pt); netSaveQueue(); netFlush(); }
+// ===== Transport : Google Apps Script (Google Sheets) — clé = nom du projet =====
+function netPost(payload){ try{ return fetch(netBase(), {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload)}); }catch(e){ return Promise.reject(e); } }
+function netJsonp(url){ return new Promise(function(resolve,reject){
+  var cb="__cg_"+Math.random().toString(36).slice(2); var s=document.createElement("script"); var done=false;
+  var to=setTimeout(function(){ if(!done){ cleanup(); reject(new Error("timeout")); } },20000);
+  function cleanup(){ done=true; try{ delete window[cb]; }catch(e){ try{ window[cb]=undefined; }catch(_){} } if(s&&s.parentNode) s.parentNode.removeChild(s); clearTimeout(to); }
+  window[cb]=function(data){ if(!done){ cleanup(); resolve(data); } };
+  s.onerror=function(){ if(!done){ cleanup(); reject(new Error("script")); } };
+  s.src=url+(url.indexOf("?")>=0?"&":"?")+"callback="+cb; (document.head||document.documentElement).appendChild(s);
+}); }
+function netReconcile(){
+  if(Array.isArray(netQueue)&&netQueue.length){ var have=new Set((netCloud||[]).map(function(p){return p&&p.id;})); var b=netQueue.length; netQueue=netQueue.filter(function(p){return !(p&&have.has(p.id));}); if(netQueue.length!==b) netSaveQueue(); }
+  if(Array.isArray(implQueue)&&implQueue.length){ var h2=new Set((implCloud||[]).map(function(e){return e&&e.id;})); var b2=implQueue.length; implQueue=implQueue.filter(function(e){return !(e&&h2.has(e.id));}); if(implQueue.length!==b2) implQSave(); }
+}
 function netFlush(){
   try{
-    if(!netOn() || netFlushing) return;
+    if(!netOn() || netFlushing || !netProjId()) return;
     if(typeof navigator!=="undefined" && navigator.onLine===false) return;
-    if(typeof fetch!=="function" || !netSignedIn()) return;
-    const pB=Array.isArray(netQueue)?netQueue.slice():[]; const iB=Array.isArray(implQueue)?implQueue.slice():[];
+    if(typeof fetch!=="function") return;
+    var pB=Array.isArray(netQueue)?netQueue.slice():[]; var iB=Array.isArray(implQueue)?implQueue.slice():[];
     if(!pB.length && !iB.length) return;
     netFlushing=true;
-    netToken().then(tok=>{
-      if(!tok) return null;
-      const q="?auth="+encodeURIComponent(tok); const jobs=[];
-      pB.forEach(pt=> jobs.push(fetch(netUrl("receptions/"+encodeURIComponent(pt.id))+q,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(pt)}).then(r=>({k:"r",id:pt.id,ok:!!(r&&r.ok)})).catch(()=>({k:"r",id:pt.id,ok:false}))));
-      iB.forEach(e=> jobs.push(fetch(netUrl("implantations/"+encodeURIComponent(e.id))+q,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)}).then(r=>({k:"i",id:e.id,ok:!!(r&&r.ok)})).catch(()=>({k:"i",id:e.id,ok:false}))));
-      return Promise.all(jobs).then(res=>{ const okr=new Set(res.filter(x=>x.k==="r"&&x.ok).map(x=>x.id)); const oki=new Set(res.filter(x=>x.k==="i"&&x.ok).map(x=>x.id)); if(okr.size){ netQueue=netQueue.filter(pt=>!okr.has(pt.id)); netSaveQueue(); } if(oki.size){ implQueue=implQueue.filter(e=>!oki.has(e.id)); implQSave(); } });
-    }).catch(()=>{}).then(()=>{ netFlushing=false; try{ renderNetStatus(); }catch(e){} const more=(Array.isArray(netQueue)&&netQueue.length)||(Array.isArray(implQueue)&&implQueue.length); if(more && netOn() && netSignedIn() && !(typeof navigator!=="undefined"&&navigator.onLine===false)) setTimeout(netFlush,1500); });
+    var proj=netProjId(); var jobs=[];
+    if(pB.length) jobs.push(netPost({project:proj, kind:"receptions", items:pB}));
+    if(iB.length) jobs.push(netPost({project:proj, kind:"implantations", items:iB}));
+    Promise.all(jobs).catch(function(){}).then(function(){
+      netFlushing=false; try{ renderNetStatus(); }catch(e){}
+      netPull(function(){ try{ renderRecap(); }catch(e){} try{ renderNetStatus(); }catch(e){}
+        var more=(Array.isArray(netQueue)&&netQueue.length)||(Array.isArray(implQueue)&&implQueue.length);
+        if(more && netOn() && !(typeof navigator!=="undefined"&&navigator.onLine===false)) setTimeout(netFlush,5000);
+      });
+    });
   }catch(e){ netFlushing=false; }
 }
 function netPull(cb){
   try{
-    if(!netOn() || (typeof navigator!=="undefined" && navigator.onLine===false) || typeof fetch!=="function" || !netSignedIn()){ if(cb)cb(); return; }
-    netToken().then(tok=>{
-      if(!tok){ if(cb)cb(); return; }
-      const q="?auth="+encodeURIComponent(tok);
-      const p1=fetch(netUrl("receptions")+q).then(r=> r&&r.ok?r.json():null).then(data=>{ if(data&&typeof data==="object"){ netCloud=Object.keys(data).map(k=>data[k]).filter(Boolean); try{ localStorage.setItem("recepTopo.netcloud", JSON.stringify(netCloud)); }catch(e){} } }).catch(()=>{});
-      const p2=fetch(netUrl("implantations")+q).then(r=> r&&r.ok?r.json():null).then(data=>{ if(data&&typeof data==="object"){ implCloud=Object.keys(data).map(k=>data[k]).filter(Boolean); try{ localStorage.setItem("recepTopo.implcloud", JSON.stringify(implCloud)); }catch(e){} } }).catch(()=>{});
-      return Promise.all([p1,p2]);
-    }).catch(()=>{}).then(()=>{ if(cb)cb(); });
+    if(!netOn() || !netProjId() || (typeof navigator!=="undefined" && navigator.onLine===false) || typeof document==="undefined"){ if(cb)cb(); return; }
+    var proj=encodeURIComponent(netProjId()); var base=netBase();
+    var p1=netJsonp(base+"?project="+proj+"&kind=receptions").then(function(arr){ if(Array.isArray(arr)){ netCloud=arr; try{ localStorage.setItem("recepTopo.netcloud", JSON.stringify(netCloud)); }catch(e){} } }).catch(function(){});
+    var p2=netJsonp(base+"?project="+proj+"&kind=implantations").then(function(arr){ if(Array.isArray(arr)){ implCloud=arr; try{ localStorage.setItem("recepTopo.implcloud", JSON.stringify(implCloud)); }catch(e){} } }).catch(function(){});
+    Promise.all([p1,p2]).then(function(){ try{ netReconcile(); }catch(e){} if(cb)cb(); }).catch(function(){ if(cb)cb(); });
   }catch(e){ if(cb)cb(); }
 }
 function netSyncNow(){ try{ licSyncTrial(); }catch(e){} netFlush(); netPull(()=>{ try{ renderRecap(); }catch(e){} }); }
@@ -1285,17 +1287,13 @@ function netSignOut(){ netAuth=null; netSaveAuth(); try{ renderNetStatus(); }cat
 function renderNetStatus(){
   const el=g("net_status"); if(!el) return;
   if(!netOn()){ el.textContent="Synchronisation désactivée."; el.style.color="#5b6b7a"; return; }
-  if(/console\.firebase\.google\.com/i.test(String(netCfg().url||""))){ el.textContent="URL incorrecte : c'est l'adresse de la console. Mettez l'URL de la base (se termine par -default-rtdb.firebaseio.com)."; el.style.color="#c0392b"; return; }
-  if(netApiKey() && !/^AIza/i.test(netApiKey())){ el.textContent="Clé API Web incorrecte : elle commence par « AIza… » (ce n'est PAS le numéro du projet)."; el.style.color="#c0392b"; return; }
+  if(!netProjId()){ el.textContent="Renseignez d'abord le « Nom du projet » (onglet Mon projet) : c'est la clé de partage."; el.style.color="#c0392b"; return; }
+  if(!/script\.google\.com\/macros\//i.test(String(netCfg().url||""))){ el.textContent="Lien du script Google incorrect : il doit ressembler à https://script.google.com/macros/s/…/exec"; el.style.color="#c0392b"; return; }
   const online=(typeof navigator==="undefined")||navigator.onLine!==false;
-  const q=Array.isArray(netQueue)?netQueue.length:0;
-  let s=(online?"En ligne":"Hors-ligne")+" · ";
-  if(!netApiKey()) s+="clé API Web manquante";
-  else if(!netSignedIn()) s+="non connecté — saisissez vos identifiants";
-  else s+="connecté ("+(netAuth.email||"")+") · "+(q?(q+" en attente d'envoi"):"à jour");
-  s+=" · code projet "+netProjId();
+  const q=(Array.isArray(netQueue)?netQueue.length:0)+(Array.isArray(implQueue)?implQueue.length:0);
+  let s=(online?"En ligne":"Hors-ligne")+" · projet « "+netProjId()+" » · "+(q?(q+" en attente d'envoi"):"à jour");
   el.textContent=s;
-  el.style.color=online?(netSignedIn()?(q?"#c07a00":"#1a7f43"):"#c0392b"):"#c0392b";
+  el.style.color=online?(q?"#c07a00":"#1a7f43"):"#c0392b";
 }
 let cfg = load(LS_CFG, { chantier: "DABAKALA-SATAMA-SOKORO", tolPST: 20, tolFond: 20, tolBase: 10 });
 if (cfg.tolPST == null) cfg.tolPST = 20;

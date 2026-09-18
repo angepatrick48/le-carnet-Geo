@@ -1,5 +1,5 @@
 /* Le Carnet Géo — service worker : fonctionnement hors connexion */
-const CACHE = 'carnetgeo-v75';
+const CACHE = 'carnetgeo-v77';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(['./','./index.html','./app.html'])).then(() => self.skipWaiting())
