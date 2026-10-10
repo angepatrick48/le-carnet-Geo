@@ -729,7 +729,7 @@
 
     <div class="card">
       <h2>Assainissement, drainage &amp; ouvrages hydrauliques (prévus)</h2>
-      <p class="proj-help">Listez les ouvrages prévus. Pour l'<b>assainissement linéaire</b> (bordure, caniveau, fossé) : précisez le <b>côté</b> (gauche/droite) et le PK début → PK fin. Pour un <b>dalot ou ouvrage transversal</b> (buse, radier, tête…) : indiquez uniquement le <b>PK de l'axe</b> (les cases « Côté » et « PK fin » se désactivent d'elles-mêmes). Sert au suivi « prévu / réalisé / reste » dans la synoptique. La colonne <b>« Longueur (m) »</b> alimente le tableau récapitulatif : laissez vide pour un calcul automatique (PK fin − PK début), ou saisissez la longueur — <b>indispensable pour les ouvrages ponctuels</b> (dalots, buses) qui n'ont qu'un PK.</p>
+      <p class="proj-help">Listez les ouvrages prévus. Pour l'<b>assainissement linéaire</b> (bordure, caniveau, fossé) : précisez le <b>côté</b> (gauche/droite) et le PK début → PK fin. Pour un <b>dalot ou ouvrage transversal</b> (buse, radier, tête…) : indiquez uniquement le <b>PK de l'axe</b> (les cases « Côté » et « PK fin » se désactivent d'elles-mêmes). Sert au suivi « prévu / réalisé / reste » dans la synoptique. La colonne <b>« Longueur (m) »</b> alimente le tableau récapitulatif : laissez vide pour un calcul automatique (PK fin − PK début), ou saisissez la longueur — <b>indispensable pour les ouvrages ponctuels</b> (dalots, buses) qui n'ont qu'un PK.<br><b>Import Excel :</b> colonnes <b>TYPE</b> (ex. <i>Caniveau.60x60</i>, <i>Bordure.T2CS2</i>, <i>BUSE/AQUEDUC</i>), <b>SECTION</b>, <b>COTE</b> (Droit/Gauche), <b>PK DEBUT</b>, <b>PK FIN</b>, <b>LONGUEUR</b> — l'ordre des colonnes est reconnu automatiquement d'après la ligne d'en-tête. Après import, rien de plus à saisir : tout se répercute dans la synoptique et le récapitulatif.</p>
       <div class="pos-panel"><table class="proj-table"><thead><tr><th>Type</th><th>Section</th><th>Côté</th><th>PK (début/axe)</th><th>PK fin</th><th>Longueur (m)</th><th></th></tr></thead><tbody id="pj_drBody"></tbody></table></div>
       <div class="row-actions"><button id="pj_drAdd" class="ghost" type="button">+ Ajouter un ouvrage</button><button id="pj_drModel" class="ghost" type="button">⬇ Modèle Excel</button><button id="pj_drImport" class="ghost" type="button">⬆ Importer Excel</button><input type="file" id="pj_drFile" accept=".xlsx" style="display:none"><button id="pj_saveDr" class="ghost">Enregistrer</button><span class="proj-help" id="pj_drMsg"></span></div>
     </div>
@@ -861,7 +861,7 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v80 (09/10/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v81 (10/10/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
 <div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Synchro Google Sheets</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
@@ -932,7 +932,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v80 — 9 oct. 2026.</p>
+    <p><b>Version :</b> v81 — 10 oct. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -3160,19 +3160,19 @@ function recapCompareSVG(){
 }
 function drainModelSheet(){
   const grid=[]; const set=function(r,c,v,s){(grid[r]=grid[r]||[])[c]={v:v,s:s};};
-  const hdr=["LOCALITÉ","TYPE OUVRAGE","SECTION","PK DÉBUT","PK FIN","LONGUEUR (m)","LONG. UNITAIRE (m)","NOMBRE","CÔTÉ"];
+  const hdr=["TYPE","SECTION","COTE","PK DEBUT","PK FIN","LONGUEUR"];
   hdr.forEach(function(t,c){ set(0,c,t,5); });
   const ex=[
-    ["DABAKALA","Caniveaux","60x60","0+000","0+140",140,2,70,"Droit"],
-    ["","Caniveaux","80x80","0+140","0+300",160,2,80,"Gauche"],
-    ["","Bordures","T2CS2","0+000","0+410",410,0.5,820,"Gauche"],
-    ["","Dalots d'accès","60x50","0+560","0+570",12,2,6,"Gauche"],
-    ["","BUSES","DN1000","1+560","1+580",20,2,10,"Gauche"],
-    ["","Fossés","Fossé bétonné","2+380","2+420",40,"-","-","Gauche"]
+    ["Caniveau.60x60","","Droit","00+000","00+140",140],
+    ["Caniveau.60x60","","Gauche","00+410","00+560",150],
+    ["Bordure.T2CS2","","Droit","01+230","01+260",30],
+    ["Dalot.60x60","","Gauche","00+560","00+570",10],
+    ["BUSE/AQUEDUC","1000","Gauche","01+560","01+580",20],
+    ["Fossé bétonné","","Droit","02+380","02+420",40]
   ];
   ex.forEach(function(row,i){ row.forEach(function(v,c){ set(1+i,c,v,7); }); });
-  for(let i=0;i<25;i++){ for(let c=0;c<9;c++) set(1+ex.length+i,c,"",7); }
-  return {name:"Assainissement", grid:grid, merges:[], cols:[16,16,15,10,10,13,15,9,10], rowH:{0:26}};
+  for(let i=0;i<30;i++){ for(let c=0;c<6;c++) set(1+ex.length+i,c,"",7); }
+  return {name:"Assainissement", grid:grid, merges:[], cols:[20,12,10,12,12,12], rowH:{0:26}};
 }
 function drainModelDownload(){
   try{
@@ -3182,15 +3182,27 @@ function drainModelDownload(){
   }catch(e){ alert("Erreur lors de la création du modèle : "+((e&&e.message)||e)); }
 }
 function mapImportType(b, c){
-  b=((b||"")+"").trim(); c=((c||"")+"").trim(); const bl=b.toLowerCase(); const dim=c.toUpperCase().replace(/\s+/g,"");
-  if(bl.indexOf("caniveau")>=0) return "Caniveau."+dim;
-  if(bl.indexOf("bordure")>=0) return "Bordure."+c;
-  if(bl.indexOf("dalot")>=0) return "Dalot."+dim;
-  if(bl.indexOf("buse")>=0) return "Buse / aqueduc";
-  if(bl.indexOf("foss")>=0) return /b[eé]ton/i.test(c)?"Fossé bétonné":(c||"Fossé");
-  if(bl.indexOf("radier")>=0) return "Radier";
-  if(bl.indexOf("descente")>=0) return "Descente d'eau";
-  return c?(b+" "+c):b;
+  b=((b||"")+"").trim(); c=((c||"")+"").trim();
+  const bl=b.toLowerCase();
+  // 1) correspondance exacte avec un élément connu (gère "Caniveau.60x60", "Bordure.T2CS2", "Dalot cadre"…)
+  const allCanon=DRAINAGE_ELEMENTS.concat(OUVRAGES);
+  const norm=b.replace(/(\d)\s*[xX]\s*(\d)/g,"$1X$2");            // 60x60 → 60X60
+  let hit=allCanon.filter(function(x){ return x.toLowerCase()===bl || x.toLowerCase()===norm.toLowerCase(); })[0];
+  if(hit) return hit;
+  // 2) dimension embarquée dans le type ("Caniveau.60x60") ou fournie à part (colonne Section)
+  const dot=b.indexOf(".");
+  const fam=(dot>=0?b.slice(0,dot):b).trim(), famL=fam.toLowerCase();
+  const spec=((dot>=0?b.slice(dot+1):"")||c).trim();
+  const specU=spec.toUpperCase().replace(/\s+/g,"");
+  if(/buse|aqueduc/.test(bl)) return "Buse / aqueduc";
+  if(/radier/.test(bl)) return "Radier";
+  if(/descente/.test(bl)) return "Descente d'eau";
+  if(/t[êe]te/.test(bl)) return /aval/.test(bl)?"Tête d'ouvrage aval":"Tête d'ouvrage amont";
+  if(/foss/.test(bl)) return /b[eé]ton/i.test(b+" "+c)?"Fossé bétonné":(spec?("Fossé "+spec):"Fossé");
+  if(famL.indexOf("caniveau")>=0) return specU?("Caniveau."+specU):"Caniveau";
+  if(famL.indexOf("dalot")>=0)    return specU?("Dalot."+specU):"Dalot";
+  if(famL.indexOf("bordure")>=0)  return specU?("Bordure."+specU):"Bordure";
+  return norm||(c||"");
 }
 function drainIsTransversal(t){ return /dalot|buse|aqueduc|radier|t[êe]te|descente/i.test(t||""); }
 function drainOptions(sel){ let o='<option value="">—</option>'; DRAINAGE_ELEMENTS.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); OUVRAGES.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); return o; }
@@ -3676,18 +3688,44 @@ if (g("pj_drFile")) g("pj_drFile").addEventListener("change", async (e) => {
   if(msg){ msg.textContent="Lecture du fichier…"; msg.style.color="#5b6b7a"; }
   try{
     const rows=await parseXlsx(await f.arrayBuffer());
-    const out=[]; let lastType="", lastSec=""; const pkre=/\d+\s*\+\s*\d+/;
-    rows.forEach(function(r){
-      const b=(r[1]!=null?String(r[1]):"").trim(); if(b){ lastType=b; lastSec=""; }
-      if(/^total$/i.test(b)) return;
-      let sec=(r[2]!=null?String(r[2]):"").trim(); if(sec) lastSec=sec; else sec=lastSec;
-      const d=(r[3]!=null?String(r[3]):"").trim();
-      if(!pkre.test(d)) return;
-      const fin=(r[4]!=null?String(r[4]):"").trim();
-      const lg=parseFloat(String(r[5]!=null?r[5]:"").replace(",","."));
-      const cot=(r[8]!=null?String(r[8]):"").trim().toLowerCase();
-      const cote= cot.indexOf("droit")>=0?"D":(cot.indexOf("gauche")>=0?"G":"");
-      out.push({ type:mapImportType(lastType,sec), section:sec, cote:cote, pkd:d, pkf:fin, long:(isFinite(lg)?String(lg):"") });
+    const pkre=/\d+\s*\+\s*\d+/;
+    const cellOf=function(r,ci){ return (ci>=0 && r[ci]!=null)?String(r[ci]).trim():""; };
+    // --- Détection de la ligne d'en-tête et de la position de chaque colonne ---
+    let hdrIdx=-1, map={type:0,section:1,cote:2,pkd:3,pkf:4,long:5};
+    for(let i=0;i<Math.min(rows.length,12);i++){
+      const low=(rows[i]||[]).map(function(x){ return (x!=null?String(x):"").trim().toLowerCase(); });
+      const col=function(test){ for(let c=0;c<low.length;c++){ if(test(low[c])) return c; } return -1; };
+      const ciType=col(function(h){ return /type/.test(h); });
+      const ciPk  =col(function(h){ return /pk/.test(h); });
+      if(ciType>=0 && ciPk>=0){
+        hdrIdx=i;
+        map={
+          type:ciType,
+          section:col(function(h){ return /section/.test(h); }),
+          cote:  col(function(h){ return /c[ôo]t/.test(h)||/^cote$/.test(h); }),
+          pkd:   col(function(h){ return /pk/.test(h) && (/d[ée]b/.test(h)||/debut/.test(h)); }),
+          pkf:   col(function(h){ return /pk/.test(h) && /fin/.test(h); }),
+          long:  col(function(h){ return /^long/.test(h) && !/unit/.test(h); })
+        };
+        if(map.pkd<0) map.pkd=col(function(h){ return /pk/.test(h) && !/fin/.test(h); });
+        if(map.long<0) map.long=col(function(h){ return /long/.test(h) && !/unit/.test(h); });
+        break;
+      }
+    }
+    const out=[]; let lastType="";
+    rows.forEach(function(r,i){
+      if(i<=hdrIdx) return;                                   // ignore l'en-tête et ce qui précède
+      let typ=cellOf(r,map.type);
+      if(/^total/i.test(typ)) return;
+      if(typ) lastType=typ; else typ=lastType;                // report si cellule fusionnée vide
+      const sec=cellOf(r,map.section);
+      const cot=cellOf(r,map.cote).toLowerCase();
+      const cote= cot.indexOf("droit")>=0?"D":((cot.indexOf("gauch")>=0)?"G":"");
+      const d=cellOf(r,map.pkd);
+      if(!pkre.test(d)) return;                               // pas de PK valide → ligne ignorée
+      const fin=cellOf(r,map.pkf);
+      const lg=parseFloat(cellOf(r,map.long).replace(",","."));
+      out.push({ type:mapImportType(typ,sec), section:sec, cote:cote, pkd:d, pkf:fin, long:(isFinite(lg)?String(lg):"") });
     });
     if(!out.length){ if(msg){msg.textContent="Aucun ouvrage détecté (vérifiez le format du fichier)."; msg.style.color="#c0392b";} e.target.value=""; return; }
     if(!Array.isArray(projet.drainage)) projet.drainage=[];
