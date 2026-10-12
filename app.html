@@ -31,11 +31,16 @@
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; max-width: 100%; }
   body {
     margin: 0; background: #f4f6f8; color: #1a2027;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px; line-height: 1.4;
   }
+  /* champs de formulaire : autoriser le rétrécissement sous la largeur du contenu (évite le débordement) */
+  .field { min-width: 0; }
+  .field input, .field select, .field textarea { max-width: 100%; }
+  input[type=file] { max-width: 100%; font-size: 13px; }
   .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; position: relative; z-index: 1; }
   .bg-illus { position: fixed; right: -10px; bottom: -14px; width: min(42vw, 460px); opacity: .13;
     pointer-events: none; z-index: 0; user-select: none; }
@@ -130,6 +135,22 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .settings-grid { grid-template-columns: 1fr; }
   }
+  /* petits téléphones : une seule colonne pour tout saisir confortablement */
+  @media (max-width: 560px) {
+    .wrap { padding: 14px 10px 54px; }
+    .card { padding: 13px; }
+    .grid-form { grid-template-columns: 1fr; gap: 12px; }
+    .field.wide { grid-column: auto; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .bleue-grid { grid-template-columns: 1fr; }
+    header { flex-wrap: wrap; }
+    header h1 { font-size: 18px; }
+    .toolbar, .row-actions { gap: 6px; }
+    .navbtn { padding: 9px 14px; font-size: 14px; }
+  }
+  @media (max-width: 360px) {
+    .stats { grid-template-columns: 1fr; }
+  }
   .topnav { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
   .navbtn { flex:0 0 auto; padding:10px 18px; border:1px solid #cdd8e3; background:#eef3f8; color:#33475b; border-radius:10px; font-weight:600; cursor:pointer; font-size:15px; }
   .navbtn.active { background:#2c6fb3; color:#fff; border-color:#2c6fb3; }
@@ -150,8 +171,8 @@
   .proj-num { text-align:right; }
   .proj-help { color:#6b7a8d; font-size:13px; margin-top:6px; }
   .lr-count { font-weight:700; color:#2c6fb3; }
-  .logo-prev { margin-top:6px; display:flex; align-items:center; gap:8px; }
-  .logo-prev img { max-height:46px; max-width:150px; border:1px solid #e2e8ee; border-radius:6px; padding:2px; background:#fff; }
+  .logo-prev { margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .logo-prev img { max-height:46px; max-width:100%; border:1px solid #e2e8ee; border-radius:6px; padding:2px; background:#fff; }
 
   /* ===== écran d'accueil (splash) ===== */
   #splash{ position:fixed; inset:0; z-index:100000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
@@ -730,8 +751,12 @@
     <div class="card">
       <h2>Assainissement, drainage &amp; ouvrages hydrauliques (prévus)</h2>
       <p class="proj-help">Listez les ouvrages prévus. Pour l'<b>assainissement linéaire</b> (bordure, caniveau, fossé) : précisez le <b>côté</b> (gauche/droite) et le PK début → PK fin. Pour un <b>dalot ou ouvrage transversal</b> (buse, radier, tête…) : indiquez uniquement le <b>PK de l'axe</b> (les cases « Côté » et « PK fin » se désactivent d'elles-mêmes). Sert au suivi « prévu / réalisé / reste » dans la synoptique. La colonne <b>« Longueur (m) »</b> alimente le tableau récapitulatif : laissez vide pour un calcul automatique (PK fin − PK début), ou saisissez la longueur — <b>indispensable pour les ouvrages ponctuels</b> (dalots, buses) qui n'ont qu'un PK.<br><b>Import Excel :</b> colonnes <b>TYPE</b> (ex. <i>Caniveau.60x60</i>, <i>Bordure.T2CS2</i>, <i>BUSE/AQUEDUC</i>), <b>SECTION</b>, <b>COTE</b> (Droit/Gauche), <b>PK DEBUT</b>, <b>PK FIN</b>, <b>LONGUEUR</b> — l'ordre des colonnes est reconnu automatiquement d'après la ligne d'en-tête. Après import, rien de plus à saisir : tout se répercute dans la synoptique et le récapitulatif.</p>
-      <div class="pos-panel"><table class="proj-table"><thead><tr><th>Type</th><th>Section</th><th>Côté</th><th>PK (début/axe)</th><th>PK fin</th><th>Longueur (m)</th><th></th></tr></thead><tbody id="pj_drBody"></tbody></table></div>
-      <div class="row-actions"><button id="pj_drAdd" class="ghost" type="button">+ Ajouter un ouvrage</button><button id="pj_drModel" class="ghost" type="button">⬇ Modèle Excel</button><button id="pj_drImport" class="ghost" type="button">⬆ Importer Excel</button><input type="file" id="pj_drFile" accept=".xlsx" style="display:none"><button id="pj_saveDr" class="ghost">Enregistrer</button><span class="proj-help" id="pj_drMsg"></span></div>
+      <div class="row-actions" style="margin-top:4px;">
+        <input type="text" id="pj_drSearch" placeholder="Rechercher un ouvrage (type ou PK, ex : caniveau, 12+000)" autocomplete="off" style="max-width:300px; border:1px solid #cdd8e3; border-radius:6px; padding:6px;">
+        <span class="proj-help" id="pj_drNote"></span>
+      </div>
+      <div class="pos-panel" style="max-height:340px; overflow:auto;"><table class="proj-table"><thead><tr><th>Type</th><th>Section</th><th>Côté</th><th>PK (début/axe)</th><th>PK fin</th><th>Longueur (m)</th><th></th></tr></thead><tbody id="pj_drBody"></tbody></table></div>
+      <div class="row-actions"><button id="pj_drAdd" class="ghost" type="button">+ Ajouter un ouvrage</button><button id="pj_drModel" class="ghost" type="button">⬇ Modèle Excel</button><button id="pj_drImport" class="ghost" type="button">⬆ Importer Excel</button><input type="file" id="pj_drFile" accept=".xlsx" style="display:none"><button id="pj_saveDr" class="ghost">Enregistrer</button><span class="proj-help"><span id="pj_drCount">0</span> ouvrage(s)</span><span class="proj-help" id="pj_drMsg"></span></div>
     </div>
     <div class="card">
       <h2>Import de la ligne rouge (profil en long — 5 points)</h2>
@@ -861,7 +886,7 @@
       <div id="recap_table"></div>
     </div>
   </div>
-  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v81 (10/10/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
+  <footer class="app-foot">© 2026 MORO KOUAMÉ ANGE PATRICK — <b>Le Carnet‑Géo</b> · v83 (12/10/2026). Tous droits réservés. <button type="button" id="helpBtn" class="linklike">📖 Manuels</button> · <button type="button" id="aboutBtn" class="linklike">À propos / Mentions légales</button></footer>
 </div>
 
 <div id="helpOverlay" class="ov-hidden"><div class="ov-box" style="max-width:760px"><button type="button" id="helpClose" class="ov-close" aria-label="Fermer">✕</button><h2 style="color:#0b3d66;margin:0 0 8px">Manuels — Le Carnet Géo</h2><div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" id="helpTab1" class="ghost">Manuel d'utilisation</button><button type="button" id="helpTab2" class="ghost">Manuel — Synchro Google Sheets</button></div><div id="helpMan1" class="man"><h3>Présentation</h3>
@@ -932,7 +957,7 @@
     <p><b>Copyright :</b> © 2026 MORO KOUAMÉ ANGE PATRICK. Tous droits réservés.</p>
     <p><b>Protection :</b> œuvre logicielle originale protégée par le droit d'auteur (Convention de Berne ; Côte d'Ivoire / OAPI). Le nom et le logo « Le Carnet‑Géo » sont susceptibles de protection par le droit des marques.</p>
     <p><b>Licence :</b> l'utilisation est réservée à l'auteur et aux personnes qu'il autorise. Toute reproduction, modification, décompilation, distribution ou revente, totale ou partielle, sans autorisation écrite préalable de l'auteur, est strictement interdite.</p>
-    <p><b>Version :</b> v81 — 10 oct. 2026.</p>
+    <p><b>Version :</b> v83 — 12 oct. 2026.</p>
     <p><b>Licence :</b> <span id="ab_lic">—</span></p>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:2px 0 6px;">
       <input type="text" id="ab_lic_key" placeholder="LCG-XXXX-XXXX-XXXX" autocomplete="off" style="max-width:210px; text-transform:uppercase; letter-spacing:.08em;">
@@ -3206,23 +3231,53 @@ function mapImportType(b, c){
 }
 function drainIsTransversal(t){ return /dalot|buse|aqueduc|radier|t[êe]te|descente/i.test(t||""); }
 function drainOptions(sel){ let o='<option value="">—</option>'; DRAINAGE_ELEMENTS.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); OUVRAGES.forEach(e=>{ o+=`<option${e===sel?" selected":""}>${esc(e)}</option>`; }); return o; }
-function renderDrainage(){
+function drMatch(o,q){ if(!q) return true; q=q.toLowerCase();
+  return String(o.type||"").toLowerCase().indexOf(q)>=0
+      || String(o.section||"").toLowerCase().indexOf(q)>=0
+      || String(o.pkd||"").toLowerCase().indexOf(q)>=0
+      || String(o.pkf||"").toLowerCase().indexOf(q)>=0; }
+function renderDrainage(forceEdit){
   const body=g("pj_drBody"); if(!body) return;
   if(!Array.isArray(projet.drainage)) projet.drainage=[];
   projet.drainage.forEach(o=>{ if(o.cote===undefined) o.cote=""; if(o.long===undefined) o.long=""; });
-  if(!projet.drainage.length){ body.innerHTML='<tr><td colspan="7" class="proj-help">Aucun ouvrage prévu. Cliquez « + Ajouter un ouvrage ».</td></tr>'; return; }
-  body.innerHTML=projet.drainage.map((o,i)=>{
-    const trans=drainIsTransversal(o.type);
-    const coteCell = trans
-      ? '<td style="text-align:center;color:#7a8aa0">Axe</td>'
-      : `<td><select data-dr="cote" data-i="${i}" style="width:96px"><option value=""${!o.cote?' selected':''}>—</option><option value="G"${o.cote==='G'?' selected':''}>Gauche</option><option value="D"${o.cote==='D'?' selected':''}>Droite</option><option value="2"${o.cote==='2'?' selected':''}>2 côtés</option></select></td>`;
-    const pkfCell = trans
-      ? '<td style="text-align:center;color:#7a8aa0">—</td>'
-      : `<td><input type="text" data-dr="pkf" data-i="${i}" value="${esc(o.pkf||'')}" placeholder="(vide=ponctuel)" style="width:104px"></td>`;
-    return `<tr><td><select data-dr="type" data-i="${i}">${drainOptions(o.type)}</select></td><td><input type="text" data-dr="section" data-i="${i}" value="${esc(o.section||'')}" placeholder="ex : 1X2X2" style="width:88px"></td>${coteCell}<td><input type="text" data-dr="pkd" data-i="${i}" value="${esc(o.pkd||'')}" placeholder="${trans?'PK axe (12+000)':'12+000'}" style="width:100px"></td>${pkfCell}<td><input type="number" step="0.1" data-dr="long" data-i="${i}" value="${esc(o.long||'')}" placeholder="auto (PK)" style="width:92px"></td><td style="text-align:center"><button class="ghost" type="button" data-drdel="${i}">✕</button></td></tr>`;
-  }).join("");
-  body.querySelectorAll("[data-dr]").forEach(inp=>["input","change"].forEach(ev=>inp.addEventListener(ev,()=>{ const i=+inp.dataset.i,k=inp.dataset.dr; projet.drainage[i][k]=inp.value; if(k==="type"){ if(drainIsTransversal(inp.value)){ projet.drainage[i].pkf=""; projet.drainage[i].cote=""; } renderDrainage(); } })));
-  body.querySelectorAll("button[data-drdel]").forEach(b=>b.addEventListener("click",()=>{ projet.drainage.splice(+b.dataset.drdel,1); saveProjet(); renderDrainage(); }));
+  const all=projet.drainage;
+  const cnt=g("pj_drCount"); if(cnt) cnt.textContent=all.length;
+  const note=g("pj_drNote");
+  if(!all.length){ body.innerHTML='<tr><td colspan="7" class="proj-help">Aucun ouvrage prévu. Cliquez « + Ajouter un ouvrage » ou « ⬆ Importer Excel ».</td></tr>'; if(note) note.textContent=""; return; }
+  const q=((g("pj_drSearch")||{}).value||"").trim();
+  let idxs=all.map((_,i)=>i);
+  if(q) idxs=idxs.filter(i=>drMatch(all[i],q));
+  const total=idxs.length;
+  // Léger pour mobile : au-delà de 40 ouvrages SANS recherche, affichage en LECTURE SEULE (rapide).
+  // L'édition se fait sur les ouvrages trouvés par la recherche (type ou PK), ou après « + Ajouter ».
+  const editing = (forceEdit===true) || (q!=="") || (total<=40);
+  const MAX = editing ? 80 : 200;
+  const shown = editing ? idxs.slice(-MAX) : idxs.slice(0,MAX);   // en édition on montre la fin (où l'ajout apparaît)
+  if(editing){
+    body.innerHTML=shown.map(i=>{
+      const o=all[i]; const trans=drainIsTransversal(o.type);
+      const coteCell = trans
+        ? '<td style="text-align:center;color:#7a8aa0">Axe</td>'
+        : `<td><select data-dr="cote" data-i="${i}" style="width:96px"><option value=""${!o.cote?' selected':''}>—</option><option value="G"${o.cote==='G'?' selected':''}>Gauche</option><option value="D"${o.cote==='D'?' selected':''}>Droite</option><option value="2"${o.cote==='2'?' selected':''}>2 côtés</option></select></td>`;
+      const pkfCell = trans
+        ? '<td style="text-align:center;color:#7a8aa0">—</td>'
+        : `<td><input type="text" data-dr="pkf" data-i="${i}" value="${esc(o.pkf||'')}" placeholder="(vide=ponctuel)" style="width:104px"></td>`;
+      return `<tr><td><select data-dr="type" data-i="${i}">${drainOptions(o.type)}</select></td><td><input type="text" data-dr="section" data-i="${i}" value="${esc(o.section||'')}" placeholder="ex : 1X2X2" style="width:88px"></td>${coteCell}<td><input type="text" data-dr="pkd" data-i="${i}" value="${esc(o.pkd||'')}" placeholder="${trans?'PK axe (12+000)':'12+000'}" style="width:100px"></td>${pkfCell}<td><input type="number" step="0.1" data-dr="long" data-i="${i}" value="${esc(o.long||'')}" placeholder="auto (PK)" style="width:92px"></td><td style="text-align:center"><button class="ghost" type="button" data-drdel="${i}">✕</button></td></tr>`;
+    }).join("");
+    body.querySelectorAll("[data-dr]").forEach(inp=>["input","change"].forEach(ev=>inp.addEventListener(ev,()=>{ const i=+inp.dataset.i,k=inp.dataset.dr; projet.drainage[i][k]=inp.value; saveProjet(); if(k==="type"){ if(drainIsTransversal(inp.value)){ projet.drainage[i].pkf=""; projet.drainage[i].cote=""; } renderDrainage(true); } })));
+    body.querySelectorAll("button[data-drdel]").forEach(b=>b.addEventListener("click",()=>{ projet.drainage.splice(+b.dataset.drdel,1); saveProjet(); renderDrainage(true); }));
+  } else {
+    // lecture seule : cellules texte (bien plus léger que des champs de saisie)
+    body.innerHTML=shown.map(i=>{
+      const o=all[i]; const trans=drainIsTransversal(o.type);
+      const cote = trans?'Axe':(o.cote==='G'?'Gauche':o.cote==='D'?'Droite':o.cote==='2'?'2 côtés':'—');
+      const pkf = trans?'—':esc(o.pkf||'');
+      return `<tr><td>${esc(o.type||'')}</td><td>${esc(o.section||'')}</td><td style="text-align:center">${cote}</td><td>${esc(o.pkd||'')}</td><td>${pkf}</td><td class="proj-num">${esc(o.long||'')}</td><td></td></tr>`;
+    }).join("");
+  }
+  if(note) note.textContent = editing
+    ? (q ? (total+" ouvrage(s) trouvé(s) — modifiables") : "")
+    : ("Aperçu (lecture seule) — "+Math.min(MAX,total)+" ouvrage(s) sur "+total+". Pour modifier un ouvrage, cherchez-le ci-dessus (type ou PK). (Le suivi prévu/réalisé et le récap utilisent tous les ouvrages.)");
 }
 function drainRows(){
   const list=(typeof projet!=="undefined"&&Array.isArray(projet.drainage))?projet.drainage:[];
@@ -3680,7 +3735,8 @@ if (g("pj_saveInfo")) g("pj_saveInfo").addEventListener("click", () => {
 if (g("pj_addLayer")) g("pj_addLayer").addEventListener("click", () => { projet.layers.push({nom:"Nouvelle couche", ep:0, niv:false}); saveProjet(); renderEp(); renderTr(); });
 if (g("pj_saveEp")) g("pj_saveEp").addEventListener("click", () => { saveProjet(); renderEp(); renderTr(); fillCoucheOptions(); renderPosPanel(); render(); updateNet(); flash("pj_epMsg","Enregistré ✓"); });
 if (g("pj_saveTr")) g("pj_saveTr").addEventListener("click", () => { saveProjet(); renderTr(); renderLr(); renderPosPanel(); flash("pj_trMsg","Enregistré ✓"); });
-if (g("pj_drAdd")) g("pj_drAdd").addEventListener("click", () => { if(!Array.isArray(projet.drainage)) projet.drainage=[]; projet.drainage.push({type:"",section:"",cote:"",pkd:"",pkf:"",long:""}); saveProjet(); renderDrainage(); });
+if (g("pj_drAdd")) g("pj_drAdd").addEventListener("click", () => { if(!Array.isArray(projet.drainage)) projet.drainage=[]; const s=g("pj_drSearch"); if(s) s.value=""; projet.drainage.push({type:"",section:"",cote:"",pkd:"",pkf:"",long:""}); saveProjet(); renderDrainage(true); });
+if (g("pj_drSearch")){ let _dt; g("pj_drSearch").addEventListener("input", () => { clearTimeout(_dt); _dt=setTimeout(renderDrainage, 200); }); }
 if (g("pj_drImport")) g("pj_drImport").addEventListener("click", () => { const el=g("pj_drFile"); if(el) el.click(); });
 if (g("pj_drModel")) g("pj_drModel").addEventListener("click", drainModelDownload);
 if (g("pj_drFile")) g("pj_drFile").addEventListener("change", async (e) => {
